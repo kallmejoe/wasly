@@ -59,7 +59,7 @@ public class ProductDataAccess {
 
     // INSERT operation using stored procedure
     public void insertProduct(Product product) throws SQLException {
-        String callProc = "{call InsertFullProduct(?, ?, ?, ?, ?, ?)}";
+        String callProc = "{call CreateProductWithImage(?, ?, ?, ?, ?, ?)}";
 
         try (CallableStatement stmt = connection.prepareCall(callProc)) {
             // Set parameters for the stored procedure

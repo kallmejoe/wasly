@@ -54,7 +54,7 @@
                 <!-- Restaurant Header -->
                 <HBox spacing="20" alignment="CENTER_LEFT">
                     <ImageView fx:id="restaurantImage" fitHeight="120" fitWidth="120" preserveRatio="true">
-                        <Image url="@images/restaurant-placeholder.png"/>
+                        <Image url="@images/restaurant-placeholder.svg"/>
                     </ImageView>
 
                     <VBox spacing="5">
@@ -98,13 +98,13 @@
                 </columnConstraints>
 
                 <Label text="Subtotal:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                <Label fx:id="subtotalLabel" text="$0.00" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                <Label fx:id="subtotalLabel" text=" " GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
                 <Label text="Delivery Fee:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                <Label fx:id="deliveryFeeLabel" text="$0.00" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <Label fx:id="deliveryFeeLabel" text=" " GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
                 <Label text="Total:" styleClass="label-subheader" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                <Label fx:id="totalLabel" text="$0.00" styleClass="label-subheader" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <Label fx:id="totalLabel" text=" " styleClass="label-subheader" GridPane.columnIndex="1" GridPane.rowIndex="2" />
             </GridPane>
 
             <Button fx:id="checkoutButton" text="Proceed to Checkout" styleClass="button-accent"
