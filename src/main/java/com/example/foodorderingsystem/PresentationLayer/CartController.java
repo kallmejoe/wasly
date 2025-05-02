@@ -288,7 +288,6 @@ public class CartController implements Initializable {
             order.setOrderDate(LocalDateTime.now());
             order.setCustomer(customer);
             order.setRestaurant(restaurant);
-            order.setStatus("Pending");
             order.setTotalAmount(cart.calculateTotal().add(DELIVERY_FEE).doubleValue());
             order.setPayment(payment);
 

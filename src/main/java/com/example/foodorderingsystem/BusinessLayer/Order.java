@@ -1,6 +1,7 @@
 package com.example.foodorderingsystem.BusinessLayer;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 public class Order {
     private int orderId;
@@ -10,12 +11,12 @@ public class Order {
     private Delivery delivery;
     private Payment payment;
     private double totalAmount;
-    private String status;
+    // Removed status field
 
     // No-argument constructor
     public Order() {
         this.orderDate = LocalDateTime.now();
-        this.status = "Pending"; // Default status
+        // Removed status initialization
     }
 
     public Order(int orderId, LocalDateTime orderDate, Customer customer,
@@ -26,9 +27,10 @@ public class Order {
         this.restaurant = restaurant;
         this.delivery = delivery;
         this.payment = payment;
-        this.status = "Pending"; // Default status
+        // Removed status initialization
         this.totalAmount = payment != null ? payment.getAmount() : 0.0;
     }
+
 
     public Order(int orderId, LocalDateTime now, Customer customer, Restaurant restaurant, Payment payment) {
         this.orderId = orderId;
@@ -37,8 +39,19 @@ public class Order {
         this.restaurant = restaurant;
         this.delivery = null; // Delivery is not set in this constructor
         this.payment = payment;
-        this.status = "Pending"; // Default status
+        // Removed status initialization
         this.totalAmount = payment != null ? payment.getAmount() : 0.0;
+    }
+
+    // Constructor for use with checkout
+    public Order(int customerId, int restaurantId, Location deliveryLocation,
+                String paymentMethod,
+                java.util.Map<Product, Integer> items, BigDecimal totalAmount) {
+        this.orderDate = LocalDateTime.now();
+        // Removed status parameter and initialization
+        this.totalAmount = totalAmount.doubleValue();
+        // Note: Customer, Restaurant, Delivery and Payment objects will be populated later
+        // by the OrderDataAccess class
     }
 
     // Getters and setters
@@ -98,11 +111,5 @@ public class Order {
         this.totalAmount = totalAmount;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
+    // Removed getStatus and setStatus methods
 }

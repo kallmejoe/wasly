@@ -42,73 +42,6 @@ public class OrderDataAccess {
         }
     }
 
-    /**
-     * Creates a new order from an Order object
-     * @param order The Order object to create in the database
-     * @return The ID of the created order, or -1 if creation failed
-     */
-    public int createOrder(Order order) throws SQLException {
-        String sql = "INSERT INTO Orders (Order_Date, Customer_ID, Restaurant_ID, Status, Total_Amount) " +
-                     "VALUES (?, ?, ?, ?, ?)";
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setTimestamp(1, Timestamp.valueOf(order.getOrderDate()));
-            stmt.setInt(2, order.getCustomer().getCustomerId());
-            stmt.setInt(3, order.getRestaurant().getRestaurantId());
-            stmt.setString(4, order.getStatus());
-            stmt.setDouble(5, order.getTotalAmount());
-
-            int affectedRows = stmt.executeUpdate();
-
-            if (affectedRows == 0) {
-                throw new SQLException("Creating order failed, no rows affected.");
-            }
-
-            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    int orderId = generatedKeys.getInt(1);
-
-                    // Save payment info if available
-                    if (order.getPayment() != null) {
-                        Payment payment = order.getPayment();
-                        payment.setOrderId(orderId);
-                        int paymentId = paymentDataAccess.createPayment(payment);
-                        payment.setPaymentId(paymentId);
-
-                        // Update the order with payment ID
-                        updateOrderPayment(orderId, paymentId);
-                    }
-
-                    return orderId;
-                } else {
-                    throw new SQLException("Creating order failed, no ID obtained.");
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error creating order: " + e.getMessage());
-            throw e;
-        }
-    }
-
-    /**
-     * Updates the order with payment information
-     * @param orderId The ID of the order to update
-     * @param paymentId The ID of the payment to associate
-     * @throws SQLException if a database error occurs
-     */
-    private void updateOrderPayment(int orderId, int paymentId) throws SQLException {
-        String sql = "UPDATE Orders SET Payment_ID = ? WHERE Order_ID = ?";
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, paymentId);
-            stmt.setInt(2, orderId);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            System.err.println("Error updating order payment: " + e.getMessage());
-            throw e;
-        }
-    }
-
     public int placeOrder(Order order) throws SQLException {
         // Using PlaceOrder stored procedure
         String callPlaceOrder = "{call PlaceOrder(?, ?, ?, ?, ?, ?)}";
@@ -157,34 +90,36 @@ public class OrderDataAccess {
                 throw new SQLException("Customer or restaurant not found");
             }
 
-            // Create a new payment
+            // Create a new delivery - now using proper fields to match the stored procedure
+            Delivery delivery = new Delivery(null, null, "Delivery", "Person", "Agent", 0, 1000.0, new ArrayList<>(), new ArrayList<>());
+            delivery.setLocation(deliveryLocation);
+
+            // Store the delivery - the ID will be generated and returned
+            int deliveryId = deliveryDataAccess.createDelivery(delivery);
+            delivery.setDeliveryId(deliveryId);
+
+            // Create a new payment and set restaurant and delivery IDs
             Payment payment = new Payment();
             payment.setMethod(paymentMethod);
-            payment.setStatus(paymentStatus);
+            payment.setStatus(paymentStatus); // Payment status is used instead of order status
             payment.setAmount(totalAmount.doubleValue());
+            payment.setRestaurantId(restaurantId);
+            payment.setDeliveryId(deliveryId);
 
             // Store the payment
             int paymentId = paymentDataAccess.createPayment(payment);
             payment.setPaymentId(paymentId);
 
-            // Create a new delivery
-//            Delivery delivery = new Delivery();
-//            delivery.setLocation(deliveryLocation);
-//            delivery.setStatus("Pending"); // Initial status
-
-            // Store the delivery
-//            int deliveryId = deliveryDataAccess.createDelivery(delivery);
-//            delivery.setDeliveryId(deliveryId);
-
             // Create the order
             LocalDateTime now = LocalDateTime.now();
-            Order order = new Order(0, now, customer, restaurant, payment); // ID will be set by the database
+            Order order = new Order(0, now, customer, restaurant, delivery, payment); // ID will be set by the database
 
             // Place the order
-            placeOrder(order);
+            int orderId = placeOrder(order);
+            order.setOrderId(orderId);
 
-            // Save order items (this would need a method for storing order items)
-            saveOrderItems(order.getOrderId(), items);
+            // Save order items
+            saveOrderItems(orderId, items);
 
             return order;
         } catch (SQLException e) {
@@ -193,12 +128,6 @@ public class OrderDataAccess {
         }
     }
 
-    /**
-     * Saves the order items to the database
-     * @param orderId The ID of the order
-     * @param items Map of products and their quantities
-     * @throws SQLException if a database error occurs
-     */
     private void saveOrderItems(int orderId, java.util.Map<com.example.foodorderingsystem.BusinessLayer.Product, Integer> items)
             throws SQLException {
         String callSaveOrderItem = "{call AddProductToOrder(?, ?, ?)}";
@@ -220,7 +149,7 @@ public class OrderDataAccess {
             throw e;
         }
     }
-
+    //done
     public List<Order> getCustomerOrders(int customerId) throws SQLException {
         // Using GetCustomerOrders stored procedure
         String callGetCustomerOrders = "{call GetCustomerOrders(?)}";
@@ -262,6 +191,7 @@ public class OrderDataAccess {
         return orders;
     }
 
+    //done
     public Order getCustomerOrderById(int customerId, int orderId) throws SQLException {
         // Using GetCustomerOrderByID stored procedure
         String callGetCustomerOrderById = "{call GetCustomerOrderByID(?, ?)}";
@@ -300,6 +230,7 @@ public class OrderDataAccess {
         return order;
     }
 
+    //done
     public boolean cancelOrder(int customerId, int orderId) throws SQLException {
         // Using CancelOrder stored procedure
         String callCancelOrder = "{call CancelOrder(?, ?)}";
@@ -348,7 +279,7 @@ public class OrderDataAccess {
 
         return payment;
     }
-
+    //not done
     public int getCustomerOrderCount(int customerId) throws SQLException {
         // Using GetCustomerOrderCount function
         String callGetCustomerOrderCount = "{? = call GetCustomerOrderCount(?)}";
@@ -365,46 +296,41 @@ public class OrderDataAccess {
         }
     }
 
-    public Delivery getOrderDeliveryDetails(int customerId, int orderId) throws SQLException {
-        // Using GetOrderDeliveryDetails stored procedure
-        String callGetOrderDeliveryDetails = "{call GetOrderDeliveryDetails(?, ?)}";
-        Delivery delivery = null;
+    // public Delivery getOrderDeliveryDetails(int customerId, int orderId) throws SQLException {
+    //     // Using GetOrderDeliveryDetails stored procedure
+    //     String callGetOrderDeliveryDetails = "{call GetOrderDeliveryDetails(?, ?)}";
+    //     Delivery delivery = null;
 
-        try (CallableStatement stmt = connection.prepareCall(callGetOrderDeliveryDetails)) {
-            stmt.setInt(1, customerId);
-            stmt.setInt(2, orderId);
+    //     try (CallableStatement stmt = connection.prepareCall(callGetOrderDeliveryDetails)) {
+    //         stmt.setInt(1, customerId);
+    //         stmt.setInt(2, orderId);
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    int deliveryId = rs.getInt("Delivery_ID");
+    //         try (ResultSet rs = stmt.executeQuery()) {
+    //             if (rs.next()) {
+    //                 int deliveryId = rs.getInt("Delivery_ID");
 
-                    // Fetch the delivery object using the DeliveryDataAccess class
-                    delivery = deliveryDataAccess.getDeliveryById(deliveryId);
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error getting order delivery details: " + e.getMessage());
-            throw e;
-        }
+    //                 // Fetch the delivery object using the DeliveryDataAccess class
+    //                 delivery = deliveryDataAccess.getDeliveryById(deliveryId);
+    //             }
+    //         }
+    //     } catch (SQLException e) {
+    //         System.err.println("Error getting order delivery details: " + e.getMessage());
+    //         throw e;
+    //     }
 
-        return delivery;
-    }
+    //     return delivery;
+    // }
 
-    /**
-     * Gets all orders for a specific customer
-     * @param customerId The customer ID
-     * @return List of orders for the customer
-     * @throws SQLException if a database error occurs
-     */
+
     public List<Order> getOrdersByCustomerId(int customerId) throws SQLException {
         return getCustomerOrders(customerId);
     }
 
     /**
-     * Gets filtered orders for a specific customer based on status and date period
-     * @param customerId The customer ID
-     * @param status The order status to filter by (or "All" for no filter)
-     * @param datePeriod The date period to filter by (e.g., "Last Week", "Last Month", or "All Time")
+     * Filters orders for a customer based on status and date period
+     * @param customerId The ID of the customer
+     * @param status The order status to filter by (e.g., "Delivered", "Processing", "Cancelled", "All")
+     * @param datePeriod The time period to filter by (e.g., "Last Week", "Last Month", "All Time")
      * @return List of filtered orders
      * @throws SQLException if a database error occurs
      */
@@ -416,17 +342,40 @@ public class OrderDataAccess {
         LocalDateTime fromDate = null;
 
         // Determine date filter
-        if ("Last Week".equals(datePeriod)) {
-            fromDate = now.minus(7, ChronoUnit.DAYS);
-        } else if ("Last Month".equals(datePeriod)) {
-            fromDate = now.minus(30, ChronoUnit.DAYS);
+        switch (datePeriod) {
+            case "Last Week":
+                fromDate = now.minus(7, ChronoUnit.DAYS);
+                break;
+            case "Last Month":
+                fromDate = now.minus(30, ChronoUnit.DAYS);
+                break;
+            case "Last 3 Months":
+                fromDate = now.minus(90, ChronoUnit.DAYS);
+                break;
+            case "Last 6 Months":
+                fromDate = now.minus(180, ChronoUnit.DAYS);
+                break;
+            case "Last Year":
+                fromDate = now.minus(365, ChronoUnit.DAYS);
+                break;
+            case "All Time":
+            default:
+                // No date filtering needed
+                fromDate = null;
+                break;
         }
 
         // Apply filters
         for (Order order : allOrders) {
-            boolean matchesStatus = "All".equals(status) || (order.getStatus() != null && order.getStatus().equals(status));
-            boolean matchesDate = "All Time".equals(datePeriod) ||
-                                 (fromDate != null && order.getOrderDate().isAfter(fromDate));
+            // Since delivery no longer has status, we only use payment status
+            String paymentStatus = order.getPayment() != null ? order.getPayment().getStatus() : null;
+
+            // Check if status matches payment status
+            boolean matchesStatus = "All".equals(status) ||
+                                   (paymentStatus != null && paymentStatus.equals(status));
+
+            // Check if date matches
+            boolean matchesDate = fromDate == null || order.getOrderDate().isAfter(fromDate);
 
             if (matchesStatus && matchesDate) {
                 filteredOrders.add(order);

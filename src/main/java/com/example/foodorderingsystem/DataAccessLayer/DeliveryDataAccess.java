@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,30 +33,36 @@ public class DeliveryDataAccess {
 
     public void CreateDelivery(Delivery delivery) throws SQLException {
         // Using CreateDelivery stored procedure for basic delivery info
-        String callCreateDelivery = "{call CreateDelivery(?, ?, ?, ?, ?)}";
+        String callCreateDelivery = "{call CreateDelivery(?, ?, ?, ?)}";
 
         try (CallableStatement stmt = connection.prepareCall(callCreateDelivery)) {
-            stmt.setInt(1, delivery.getDeliveryId());
-            stmt.setString(2, delivery.getFirstName());
-            stmt.setString(3, delivery.getMiddleName());
-            stmt.setString(4, delivery.getLastName());
-            stmt.setDouble(5, delivery.getSalary());
+            stmt.setString(1, delivery.getFirstName());
+            stmt.setString(2, delivery.getMiddleName());
+            stmt.setString(3, delivery.getLastName());
+            stmt.setDouble(4, delivery.getSalary());
 
             stmt.execute();
 
-            int deliveryId = delivery.getDeliveryId();
+            // Get the ID of the newly created delivery person (using SCOPE_IDENTITY() from SQL Server)
+            try (Statement idStmt = connection.createStatement();
+                 ResultSet rs = idStmt.executeQuery("SELECT SCOPE_IDENTITY() AS ID")) {
+                if (rs.next()) {
+                    int deliveryId = rs.getInt("ID");
+                    delivery.setDeliveryId(deliveryId);
 
-            // Insert phone numbers using for loop
-            for (String phone : delivery.getPhoneNumbers()) {
-                addDeliveryPhone(deliveryId, phone);
+                    // Insert phone numbers using for loop
+                    // for (String phone : delivery.getPhoneNumbers()) {
+                    //     addDeliveryPhone(deliveryId, phone);
+                    // }
+
+                    // // Insert locations using for loop
+                    // for (Location location : delivery.getLocations()) {
+                    //     addDeliveryLocation(deliveryId, location);
+                    // }
+
+                    System.out.println("Delivery created successfully with ID: " + deliveryId);
+                }
             }
-
-            // Insert locations using for loop
-            for (Location location : delivery.getLocations()) {
-                addDeliveryLocation(deliveryId, location);
-            }
-
-            System.out.println("Delivery created successfully with ID: " + deliveryId);
         }
     }
 
@@ -67,27 +74,28 @@ public class DeliveryDataAccess {
      * @throws SQLException if a database error occurs
      */
     public int createDelivery(Delivery delivery) throws SQLException {
-        // First create a new delivery record and get the ID
-        String sql = "INSERT INTO Delivery (Status) VALUES (?)";
+        // Using the CreateDelivery stored procedure
+        String callCreateDelivery = "{call CreateDelivery(?, ?, ?, ?)}";
 
-        try (java.sql.PreparedStatement stmt = connection.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, delivery.getStatus());
+        try (CallableStatement stmt = connection.prepareCall(callCreateDelivery)) {
+            stmt.setString(1, delivery.getFirstName());
+            stmt.setString(2, delivery.getMiddleName());
+            stmt.setString(3, delivery.getLastName());
+            stmt.setDouble(4, delivery.getSalary());
 
-            int affectedRows = stmt.executeUpdate();
+            stmt.execute();
 
-            if (affectedRows == 0) {
-                throw new SQLException("Creating delivery failed, no rows affected.");
-            }
-
-            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    int deliveryId = generatedKeys.getInt(1);
+            // Get the ID of the newly created delivery person (using SCOPE_IDENTITY() from SQL Server)
+            try (Statement idStmt = connection.createStatement();
+                 ResultSet rs = idStmt.executeQuery("SELECT SCOPE_IDENTITY() AS ID")) {
+                if (rs.next()) {
+                    int deliveryId = rs.getInt("ID");
                     delivery.setDeliveryId(deliveryId);
 
-                    // Save the location if provided
-                    if (delivery.getLocation() != null) {
-                        addDeliveryLocation(deliveryId, delivery.getLocation());
-                    }
+//                    // Save the location if provided
+//                    if (delivery.getLocation() != null) {
+//                        addDeliveryLocation(deliveryId, delivery.getLocation());
+//                    }
 
                     return deliveryId;
                 } else {

@@ -8,7 +8,7 @@ public class Delivery extends Account {
     private List<String> phoneNumbers;
     private List<Location> locations;
     private Location location; // Single location for a delivery
-    private String status; // Added status field
+    // Status field has been removed
 
     // Constructor for Delivery class
 //    public Delivery(){
@@ -50,12 +50,11 @@ public class Delivery extends Account {
         }
     }
 
-    // Added methods to fix errors
+    // Added methods for location handling
     public Location getLocation() { return location; }
     public void setLocation(Location location) { this.location = location; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    // Removed getStatus and setStatus methods
 
     // For compatibility with errors about getDeliveryPerson()
     public Delivery getDeliveryPerson() {
