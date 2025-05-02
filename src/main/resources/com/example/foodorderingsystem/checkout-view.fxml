@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.foodorderingsystem.PresentationLayer.CheckoutController"
+            prefHeight="600.0" prefWidth="900.0"
+            stylesheets="@styles/main-styles.css">
+
+    <!-- Top Navigation Bar -->
+    <top>
+        <VBox>
+            <HBox styleClass="nav-bar" alignment="CENTER_LEFT" spacing="15.0">
+                <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                    <Label text="Wasly" style="-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                </HBox>
+
+                <HBox alignment="CENTER" spacing="10.0">
+                    <Button fx:id="homeButton" text="Home" styleClass="nav-button" onAction="#handleHomeButton"/>
+                    <Button fx:id="restaurantsButton" text="Restaurants" styleClass="nav-button" onAction="#handleRestaurantsButton"/>
+                    <Button fx:id="ordersButton" text="My Orders" styleClass="nav-button" onAction="#handleOrdersButton"/>
+                </HBox>
+
+                <HBox alignment="CENTER_RIGHT" spacing="10.0" HBox.hgrow="ALWAYS">
+                    <Button fx:id="cartButton" styleClass="nav-button" onAction="#handleCartButton">
+                        <graphic>
+                            <HBox spacing="5" alignment="CENTER">
+                                <Label text="Cart" style="-fx-text-fill: white;"/>
+                                <Label fx:id="cartItemCount" text="0" style="-fx-text-fill: white; -fx-background-color: rgba(255,255,255,0.2); -fx-padding: 2 6; -fx-background-radius: 10;"/>
+                            </HBox>
+                        </graphic>
+                    </Button>
+                    <Button fx:id="profileButton" text="Profile" styleClass="nav-button" onAction="#handleProfileButton"/>
+                    <Button fx:id="logoutButton" text="Logout" styleClass="nav-button" onAction="#handleLogoutButton"/>
+                </HBox>
+
+                <padding>
+                    <Insets left="20.0" right="20.0"/>
+                </padding>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- Main Content Area -->
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+            <VBox spacing="20" style="-fx-padding: 20;">
+                <Label text="Checkout" styleClass="label-header"/>
+
+                <!-- Delivery Information -->
+                <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 5;">
+                    <Label text="Delivery Information" styleClass="label-subheader"/>
+
+                    <GridPane hgap="10" vgap="10">
+                        <columnConstraints>
+                            <ColumnConstraints hgrow="SOMETIMES" percentWidth="50" />
+                            <ColumnConstraints hgrow="SOMETIMES" percentWidth="50" />
+                        </columnConstraints>
+
+                        <Label text="Delivery Address:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+
+                        <ComboBox fx:id="addressComboBox" promptText="Select delivery address"
+                                 GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.columnSpan="2"
+                                 prefWidth="Infinity" />
+
+                        <Button text="Add New Address" onAction="#handleAddNewAddress"
+                               GridPane.columnIndex="0" GridPane.rowIndex="2" />
+
+                        <Label text="Delivery Instructions:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                        <TextArea fx:id="deliveryInstructionsField" promptText="Optional instructions for delivery driver"
+                                 GridPane.columnIndex="0" GridPane.rowIndex="4" GridPane.columnSpan="2"
+                                 prefHeight="80" wrapText="true" />
+                    </GridPane>
+                </VBox>
+
+                <!-- Payment Method -->
+                <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 5;">
+                    <Label text="Payment Method" styleClass="label-subheader"/>
+
+                    <VBox spacing="10">
+                        <RadioButton fx:id="cashRadioButton" text="Cash on Delivery" selected="true" />
+                        <RadioButton fx:id="creditCardRadioButton" text="Credit Card" />
+
+                        <VBox fx:id="creditCardForm" spacing="10" visible="false">
+                            <Separator />
+                            <GridPane hgap="10" vgap="10">
+                                <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" percentWidth="50" />
+                                    <ColumnConstraints hgrow="SOMETIMES" percentWidth="50" />
+                                </columnConstraints>
+
+                                <TextField fx:id="cardNumberField" promptText="Card Number"
+                                          GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2" />
+
+                                <TextField fx:id="cardNameField" promptText="Cardholder Name"
+                                          GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.columnSpan="2" />
+
+                                <TextField fx:id="expiryDateField" promptText="Expiry Date (MM/YY)"
+                                          GridPane.columnIndex="0" GridPane.rowIndex="2" />
+
+                                <TextField fx:id="cvvField" promptText="CVV"
+                                          GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                            </GridPane>
+                        </VBox>
+                    </VBox>
+                </VBox>
+
+                <!-- Order Summary -->
+                <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 5;">
+                    <Label text="Order Summary" styleClass="label-subheader"/>
+
+                    <HBox>
+                        <Label text="Restaurant: " style="-fx-font-weight: bold;" />
+                        <Label fx:id="restaurantNameLabel" text="Restaurant Name" />
+                    </HBox>
+
+                    <TableView fx:id="orderItemsTable" prefHeight="150">
+                        <columns>
+                            <TableColumn fx:id="productNameColumn" text="Product" prefWidth="350"/>
+                            <TableColumn fx:id="quantityColumn" text="Quantity" prefWidth="100"/>
+                            <TableColumn fx:id="priceColumn" text="Price" prefWidth="150"/>
+                        </columns>
+                    </TableView>
+
+                    <GridPane hgap="10" vgap="5">
+                        <columnConstraints>
+                            <ColumnConstraints hgrow="SOMETIMES" halignment="RIGHT" percentWidth="70" />
+                            <ColumnConstraints hgrow="SOMETIMES" halignment="RIGHT" percentWidth="30" />
+                        </columnConstraints>
+
+                        <Label text="Subtotal:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <Label fx:id="subtotalLabel" text="$0.00" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                        <Label text="Delivery Fee:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <Label fx:id="deliveryFeeLabel" text="$0.00" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                        <Separator GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="2" />
+
+                        <Label text="Total:" styleClass="label-subheader" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                        <Label fx:id="totalLabel" text="$0.00" styleClass="label-subheader" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                    </GridPane>
+                </VBox>
+
+                <HBox spacing="10" alignment="CENTER_RIGHT">
+                    <Button text="Back to Cart" onAction="#handleBackToCart" />
+                    <Button fx:id="placeOrderButton" text="Place Order" styleClass="button-accent" onAction="#handlePlaceOrder" />
+                </HBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- Status Bar -->
+    <bottom>
+        <HBox style="-fx-background-color: -light-gray; -fx-padding: 5 20;">
+            <Label text="© 2025 Wasly Food Ordering System" style="-fx-text-fill: -text-color;"/>
+        </HBox>
+    </bottom>
+</BorderPane>

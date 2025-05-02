@@ -6,10 +6,12 @@ public class Admin extends Account {
     private double salary;
     private List<String> phoneNumbers;
     private List<Integer> RestaurantsManaged;
+    private static int adminCounter = 0;
 
     public Admin(String email, String password, String firstName, String middleName, String lastName,
                  int adminId, double salary, List<String> phoneNumbers) {
         super(email, password, firstName, middleName, lastName);
+        this.adminId = ++adminCounter;
         this.adminId = adminId;
         this.salary = salary;
         this.phoneNumbers = phoneNumbers;
@@ -23,7 +25,7 @@ public class Admin extends Account {
 
     public List<String> getPhoneNumbers() { return phoneNumbers; }
     public void setPhoneNumbers(List<String> phoneNumbers) { this.phoneNumbers = phoneNumbers; }
-    public List<Integer> getRestaurantsManaged() {return RestaurantsManaged;}
-    public void setRestaurantsManaged(){List<String> RestaurantsManaged;}
-}
 
+    public List<Integer> getRestaurantsManaged() {return RestaurantsManaged;}
+    public void setRestaurantsManaged(List<Integer> restaurantsManaged) {this.RestaurantsManaged = restaurantsManaged;}
+}

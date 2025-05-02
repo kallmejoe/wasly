@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.foodorderingsystem.PresentationLayer.OrdersController"
+            prefHeight="600.0" prefWidth="900.0"
+            stylesheets="@styles/main-styles.css">
+
+    <!-- Top Navigation Bar -->
+    <top>
+        <VBox>
+            <HBox styleClass="nav-bar" alignment="CENTER_LEFT" spacing="15.0">
+                <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                    <Label text="Wasly" style="-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                </HBox>
+
+                <HBox alignment="CENTER" spacing="10.0">
+                    <Button fx:id="homeButton" text="Home" styleClass="nav-button" onAction="#handleHomeButton"/>
+                    <Button fx:id="restaurantsButton" text="Restaurants" styleClass="nav-button" onAction="#handleRestaurantsButton"/>
+                    <Button fx:id="ordersButton" text="My Orders" styleClass="nav-button" onAction="#handleOrdersButton"/>
+                </HBox>
+
+                <HBox alignment="CENTER_RIGHT" spacing="10.0" HBox.hgrow="ALWAYS">
+                    <Button fx:id="cartButton" styleClass="nav-button" onAction="#handleCartButton">
+                        <graphic>
+                            <HBox spacing="5" alignment="CENTER">
+                                <Label text="Cart" style="-fx-text-fill: white;"/>
+                                <Label fx:id="cartItemCount" text="0" style="-fx-text-fill: white; -fx-background-color: rgba(255,255,255,0.2); -fx-padding: 2 6; -fx-background-radius: 10;"/>
+                            </HBox>
+                        </graphic>
+                    </Button>
+                    <Button fx:id="profileButton" text="Profile" styleClass="nav-button" onAction="#handleProfileButton"/>
+                    <Button fx:id="logoutButton" text="Logout" styleClass="nav-button" onAction="#handleLogoutButton"/>
+                </HBox>
+
+                <padding>
+                    <Insets left="20.0" right="20.0"/>
+                </padding>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- Main Content Area -->
+    <center>
+        <VBox spacing="20" style="-fx-padding: 20;">
+            <!-- Header Section -->
+            <HBox>
+                <VBox>
+                    <Label text="My Orders" styleClass="label-header"/>
+                    <Label text="View and track your order history" styleClass="label-subheader" style="-fx-font-size: 14px; -fx-font-weight: normal;"/>
+                </VBox>
+            </HBox>
+
+            <!-- Filter Options -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Filter by:" />
+                <ComboBox fx:id="statusFilter" promptText="All Statuses">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <String fx:value="All" />
+                            <String fx:value="Pending" />
+                            <String fx:value="Processing" />
+                            <String fx:value="Delivered" />
+                            <String fx:value="Cancelled" />
+                        </FXCollections>
+                    </items>
+                </ComboBox>
+                <ComboBox fx:id="dateFilter" promptText="Time Period">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <String fx:value="All Time" />
+                            <String fx:value="Last Week" />
+                            <String fx:value="Last Month" />
+                            <String fx:value="Last 3 Months" />
+                        </FXCollections>
+                    </items>
+                </ComboBox>
+                <Button fx:id="applyFilterButton" text="Apply" onAction="#handleApplyFilter" styleClass="button-accent"/>
+            </HBox>
+
+            <!-- Orders Table -->
+            <TableView fx:id="ordersTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="orderIdColumn" text="Order ID" prefWidth="100.0"/>
+                    <TableColumn fx:id="dateColumn" text="Date" prefWidth="150.0"/>
+                    <TableColumn fx:id="restaurantColumn" text="Restaurant" prefWidth="200.0"/>
+                    <TableColumn fx:id="totalColumn" text="Total" prefWidth="100.0"/>
+                    <TableColumn fx:id="statusColumn" text="Status" prefWidth="120.0"/>
+                    <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="120.0"/>
+                </columns>
+            </TableView>
+
+            <!-- No Orders Message (shown when table is empty) -->
+            <StackPane fx:id="noOrdersPane" visible="false" managed="false" VBox.vgrow="ALWAYS">
+                <VBox alignment="CENTER" spacing="20">
+                    <ImageView fitHeight="100" fitWidth="100" preserveRatio="true">
+                        <Image url="@images/empty-orders.png"/>
+                    </ImageView>
+                    <Label text="You have no orders yet" style="-fx-font-size: 18px;"/>
+                    <Label text="Browse restaurants and place your first order" style="-fx-font-size: 14px; -fx-text-fill: #757575;"/>
+                    <Button text="Browse Restaurants" onAction="#handleRestaurantsButton" />
+                </VBox>
+            </StackPane>
+        </VBox>
+    </center>
+
+    <!-- Status Bar -->
+    <bottom>
+        <HBox style="-fx-background-color: -light-gray; -fx-padding: 5 20;">
+            <Label text="© 2025 Wasly Food Ordering System" style="-fx-text-fill: -text-color;"/>
+        </HBox>
+    </bottom>
+</BorderPane>

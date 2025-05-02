@@ -1,15 +1,21 @@
 package com.example.foodorderingsystem.DataAccessLayer;
 
-import com.example.foodorderingsystem.BusinessLayer.Customer;
-import com.example.foodorderingsystem.BusinessLayer.Location;
-
-import java.sql.*;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.foodorderingsystem.BusinessLayer.Customer;
+import com.example.foodorderingsystem.BusinessLayer.Location;
+
 public class CustomerDataAccess {
 
-    String url = "jdbc:sqlserver://localhost:1433;"
+    private final String url = "jdbc:sqlserver://localhost:1433;"
             + "databaseName=Wasly;"
             + "encrypt=true;"
             + "trustServerCertificate=true;"
@@ -20,7 +26,6 @@ public class CustomerDataAccess {
 
     public CustomerDataAccess() {
         try {
-            // Use only the connection string since Windows Authentication does not need a username/password
             connection = DriverManager.getConnection(url);
             System.out.println("Connected to MSSQL successfully!");
         } catch (SQLException e) {
@@ -28,40 +33,40 @@ public class CustomerDataAccess {
         }
     }
 
-    public void deleteCustomer(Connection conn, int id) throws SQLException {
-        String deletePhones = "DELETE FROM Cust_PhoneNo WHERE Customer_ID = ?";
-        String deleteLocations = "DELETE FROM Cust_Location WHERE Customer_ID = ?";
-        String deleteCustomer = "DELETE FROM Customer WHERE Customer_ID = ?";
+    // DELETE operation using stored procedure
+    public void deleteCustomer(int customerId) throws SQLException {
+        String callProc = "{call DeleteCustomer(?)}";
 
-        try (PreparedStatement phoneStmt = conn.prepareStatement(deletePhones);
-             PreparedStatement locationStmt = conn.prepareStatement(deleteLocations);
-             PreparedStatement customerStmt = conn.prepareStatement(deleteCustomer)) {
+        String deletePhoneProc = "{call DeleteCustomerPhones(?)}";
+        String deleteLocationProc = "{call DeleteCustomerLocations(?)}";
 
-            phoneStmt.setInt(1, id);
-            phoneStmt.executeUpdate();
-
-            locationStmt.setInt(1, id);
-            locationStmt.executeUpdate();
-
-            customerStmt.setInt(1, id);
-            customerStmt.executeUpdate();
-
-            System.out.println("Customer and related data deleted successfully.");
+        try (CallableStatement stmt = connection.prepareCall(callProc)) {
+            stmt.setInt(1, customerId);
+            // First delete all phone numbers
+            deleteCustomerPhones(customerId);
+            deleteCustomerLocations(customerId);
+            stmt.execute();
+            System.out.println("Customer and related data deleted successfully via stored procedure.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException("Error deleting customer via stored procedure: " + e.getMessage(), e);
         }
     }
 
-    public Customer getCustomer(int id) throws SQLException {
-        String getCustomerSQL = "SELECT * FROM Customer WHERE Customer_ID = ?";
-        String getPhoneNumbersSQL = "SELECT CPhoneNo FROM Cust_PhoneNo WHERE Customer_ID = ?";
-        String getLocationsSQL = "SELECT City, Street_Name, Street_Number FROM Cust_Location WHERE Customer_ID = ?";
+    // GET BY ID operation using stored procedure
+    public Customer getCustomerById(int customerId) throws SQLException {
+        String callProc = "{call GetCustomerByID(?)}";
 
-        try (PreparedStatement customerStmt = connection.prepareStatement(getCustomerSQL);
-             PreparedStatement phoneStmt = connection.prepareStatement(getPhoneNumbersSQL);
-             PreparedStatement locationStmt = connection.prepareStatement(getLocationsSQL)) {
+        try (CallableStatement stmt = connection.prepareCall(callProc)) {
+            stmt.setInt(1, customerId);
+            boolean hasResults = stmt.execute();
 
-            customerStmt.setInt(1, id);
-            ResultSet customerRs = customerStmt.executeQuery();
+            if (!hasResults) {
+                return null; // No customer found
+            }
 
+            // Process first result set - Customer details
+            ResultSet customerRs = stmt.getResultSet();
             if (!customerRs.next()) {
                 return null; // No customer found
             }
@@ -72,23 +77,25 @@ public class CustomerDataAccess {
             String middleName = customerRs.getString("Middle_Name");
             String lastName = customerRs.getString("Last_Name");
 
-            // Get phone numbers
-            phoneStmt.setInt(1, id);
-            ResultSet phoneRs = phoneStmt.executeQuery();
+            // Process second result set - Phone numbers
             List<String> phoneNumbers = new ArrayList<>();
-            while (phoneRs.next()) {
-                phoneNumbers.add(phoneRs.getString("CPhoneNo"));
+            if (stmt.getMoreResults()) {
+                ResultSet phoneRs = stmt.getResultSet();
+                while (phoneRs.next()) {
+                    phoneNumbers.add(phoneRs.getString("CPhoneNo"));
+                }
             }
 
-            // Get locations
-            locationStmt.setInt(1, id);
-            ResultSet locationRs = locationStmt.executeQuery();
+            // Process third result set - Locations
             List<Location> locations = new ArrayList<>();
-            while (locationRs.next()) {
-                String city = locationRs.getString("City");
-                String streetName = locationRs.getString("Street_Name");
-                String streetNumber = locationRs.getString("Street_Number");
-                locations.add(new Location(city, streetName, streetNumber));
+            if (stmt.getMoreResults()) {
+                ResultSet locationRs = stmt.getResultSet();
+                while (locationRs.next()) {
+                    String city = locationRs.getString("City");
+                    String streetName = locationRs.getString("Street_Name");
+                    String streetNumber = locationRs.getString("Street_Number");
+                    locations.add(new Location(city, streetName, streetNumber));
+                }
             }
 
             Customer customer = new Customer(
@@ -100,14 +107,18 @@ public class CustomerDataAccess {
                     phoneNumbers,
                     locations
             );
-            customer.setCustomerId(id);
-
+            customer.setCustomerId(customerId);
             return customer;
 
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLException("Error retrieving customer by ID: " + e.getMessage(), e);
+            throw new SQLException("Error retrieving customer by ID via stored procedure: " + e.getMessage(), e);
         }
+    }
+
+    // For backward compatibility
+    public Customer getCustomer(int id) throws SQLException {
+        return getCustomerById(id);
     }
 
     public void closeConnection() {
@@ -120,172 +131,236 @@ public class CustomerDataAccess {
             e.printStackTrace();
         }
     }
-    public void insertCustomerWithDetails(Connection conn, Customer customer) throws SQLException {
-        String insertCustomerSQL = "INSERT INTO Customer (Email, Password, First_Name, Middle_Name, Last_Name) " +
-                "VALUES (?, ?, ?, ?, ?)";
-        String insertPhoneSQL = "INSERT INTO Cust_PhoneNo (Customer_ID, CPhoneNo) VALUES (?, ?)";
-        String insertLocationSQL = "INSERT INTO Cust_Location (Customer_ID, City, Street_Name, Street_Number) VALUES (?, ?, ?, ?)";
 
-        try (PreparedStatement customerStmt = conn.prepareStatement(insertCustomerSQL, PreparedStatement.RETURN_GENERATED_KEYS);
-             PreparedStatement phoneStmt = conn.prepareStatement(insertPhoneSQL);
-             PreparedStatement locationStmt = conn.prepareStatement(insertLocationSQL)) {
+    // INSERT operation using stored procedure
+    public void insertCustomer(Customer customer) throws SQLException {
+        String callProc = "{call InsertFullCustomer(?, ?, ?, ?, ?)}";
+        int customerId = -1;
 
-            // Insert Customer
-            customerStmt.setString(1, customer.getEmail());
-            customerStmt.setString(2, customer.getPassword());
-            customerStmt.setString(3, customer.getFirstName());
-            customerStmt.setString(4, customer.getMiddleName());
-            customerStmt.setString(5, customer.getLastName());
-            int affectedRows = customerStmt.executeUpdate();
+        try (CallableStatement stmt = connection.prepareCall(callProc)) {
+            // Set parameters for the stored procedure
+            stmt.setString(1, customer.getEmail());
+            stmt.setString(2, customer.getPassword());
+            stmt.setString(3, customer.getFirstName());
 
-            if (affectedRows == 0) {
-                throw new SQLException("Inserting customer failed, no rows affected.");
-            }
-
-            // Get the generated customerId
-            ResultSet generatedKeys = customerStmt.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                int customerId = generatedKeys.getInt(1); // Get the generated Customer_ID
-
-                // Insert Phone Numbers
-                for (String phoneNo : customer.getPhoneNumbers()) {
-                    phoneStmt.setInt(1, customerId);
-                    phoneStmt.setString(2, phoneNo);
-                    phoneStmt.executeUpdate();
-                }
-
-                // Insert Locations
-                for (Location loc : customer.getLocation()) {
-                    locationStmt.setInt(1, customerId);
-                    locationStmt.setString(2, loc.getCity());
-                    locationStmt.setString(3, loc.getStreetName());
-                    locationStmt.setString(4, loc.getStreetNumber());
-                    locationStmt.executeUpdate();
-                }
-
-                System.out.println("Customer and associated data inserted successfully!");
+            // Middle name can be null
+            if (customer.getMiddleName() == null || customer.getMiddleName().isEmpty()) {
+                stmt.setNull(4, Types.VARCHAR);
             } else {
-                throw new SQLException("Inserting customer failed, no ID obtained.");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException("Error inserting customer and details: " + e.getMessage(), e);
-        }
-    }
-
-    public void updateCustomer(Customer customer) {
-        String updateCustomerSQL = "UPDATE Customer SET First_Name = ?, Middle_Name = ?, Last_Name = ?, Email = ? WHERE Customer_ID = ?";
-        String deletePhonesSQL = "DELETE FROM Cust_PhoneNo WHERE Customer_ID = ?";
-        String insertPhoneSQL = "INSERT INTO Cust_PhoneNo (Customer_ID, CPhoneNo) VALUES (?, ?)";
-        String deleteLocationsSQL = "DELETE FROM Cust_Location WHERE Customer_ID = ?";
-        String insertLocationSQL = "INSERT INTO Cust_Location (Customer_ID, City, Street_Name, Street_Number) VALUES (?, ?, ?, ?)";
-
-        try (
-                PreparedStatement updateCustomerStmt = connection.prepareStatement(updateCustomerSQL);
-                PreparedStatement deletePhonesStmt = connection.prepareStatement(deletePhonesSQL);
-                PreparedStatement insertPhoneStmt = connection.prepareStatement(insertPhoneSQL);
-                PreparedStatement deleteLocationsStmt = connection.prepareStatement(deleteLocationsSQL);
-                PreparedStatement insertLocationStmt = connection.prepareStatement(insertLocationSQL)
-        ) {
-            int customerId = customer.getCustomerId(); // Assuming this getter exists
-
-            // Update Customer base info
-            updateCustomerStmt.setString(1, customer.getFirstName());
-            updateCustomerStmt.setString(2, customer.getMiddleName());
-            updateCustomerStmt.setString(3, customer.getLastName());
-            updateCustomerStmt.setString(4, customer.getEmail());
-            updateCustomerStmt.setInt(5, customerId);
-            updateCustomerStmt.executeUpdate();
-
-            // Replace Phone Numbers
-            deletePhonesStmt.setInt(1, customerId);
-            deletePhonesStmt.executeUpdate();
-            for (String phone : customer.getPhoneNumbers()) {
-                insertPhoneStmt.setInt(1, customerId);
-                insertPhoneStmt.setString(2, phone);
-                insertPhoneStmt.executeUpdate();
+                stmt.setString(4, customer.getMiddleName());
             }
 
-            // Replace Locations
-            deleteLocationsStmt.setInt(1, customerId);
-            deleteLocationsStmt.executeUpdate();
-            for (Location loc : customer.getLocation()) {
-                insertLocationStmt.setInt(1, customerId);
-                insertLocationStmt.setString(2, loc.getCity());
-                insertLocationStmt.setString(3, loc.getStreetName());
-                insertLocationStmt.setString(4, loc.getStreetNumber());
-                insertLocationStmt.executeUpdate();
+            stmt.setString(5, customer.getLastName());
+
+            // Execute the stored procedure
+            stmt.execute();
+
+            System.out.println("Customer basic info inserted successfully via stored procedure.");
+
+            // Get the customer ID of the newly inserted customer
+            String getIdSQL = "SELECT Customer_ID FROM Customer WHERE Email = ?";
+            try (CallableStatement idStmt = connection.prepareCall(getIdSQL)) {
+                idStmt.setString(1, customer.getEmail());
+                ResultSet rs = idStmt.executeQuery();
+                if (rs.next()) {
+                    customerId = rs.getInt("Customer_ID");
+                    customer.setCustomerId(customerId); // Update the customer object with the new ID
+                } else {
+                    throw new SQLException("Customer was inserted but ID could not be retrieved");
+                }
             }
 
-            System.out.println("Customer, phone numbers, and all locations updated successfully.");
+            // Now add phone numbers
+            if (customerId > 0 && customer.getPhoneNumbers() != null && !customer.getPhoneNumbers().isEmpty()) {
+                for (String phoneNumber : customer.getPhoneNumbers()) {
+                    addCustomerPhone(customerId, phoneNumber);
+                }
+                System.out.println("Customer phone numbers added successfully.");
+            }
+
+            // Now add locations
+            if (customerId > 0 && customer.getLocation() != null && !customer.getLocation().isEmpty()) {
+                for (Location location : customer.getLocation()) {
+                    addCustomerLocation(customerId, location);
+                }
+                System.out.println("Customer locations added successfully.");
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new SQLException("Error inserting customer via stored procedure: " + e.getMessage(), e);
         }
     }
 
+    // For backward compatibility
+    public void insertCustomerWithDetails(Connection conn, Customer customer) throws SQLException {
+        insertCustomer(customer);
+    }
 
+    // UPDATE operation using stored procedure
+    public void updateCustomer(Customer customer) throws SQLException {
+        String callProc = "{call UpdateCustomerInfo(?, ?, ?, ?, ?, ?)}";
 
+        try (CallableStatement stmt = connection.prepareCall(callProc)) {
+            int customerId = customer.getCustomerId();
 
+            // Set parameters for the stored procedure
+            stmt.setInt(1, customerId);
+            stmt.setString(2, customer.getEmail());
+            stmt.setString(3, customer.getPassword());
+            stmt.setString(4, customer.getFirstName());
 
-    public List<Customer> getAllCustomers(Connection conn) throws SQLException {
-        String getCustomerSQL = "SELECT * FROM Customer";
-        String getPhoneNumbersSQL = "SELECT CPhoneNo FROM Cust_PhoneNo WHERE Customer_ID = ?";
-        String getLocationsSQL = "SELECT City, Street_Name, Street_Number FROM Cust_Location WHERE Customer_ID = ?";
+            // Middle name can be null
+            if (customer.getMiddleName() == null || customer.getMiddleName().isEmpty()) {
+                stmt.setNull(5, Types.VARCHAR);
+            } else {
+                stmt.setString(5, customer.getMiddleName());
+            }
 
+            stmt.setString(6, customer.getLastName());
+
+            // Execute the stored procedure for basic customer info
+            stmt.execute();
+
+            // Update phone numbers (delete all and re-insert)
+            deleteCustomerPhones(customerId);
+            for (String phoneNumber : customer.getPhoneNumbers()) {
+                addCustomerPhone(customerId, phoneNumber);
+            }
+
+            // Update locations (delete all and re-insert)
+            deleteCustomerLocations(customerId);
+            for (Location location : customer.getLocation()) {
+                addCustomerLocation(customerId, location);
+            }
+
+            System.out.println("Customer updated successfully via stored procedures.");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException("Error updating customer via stored procedures: " + e.getMessage(), e);
+        }
+    }
+
+    // Helper method to delete all phone numbers for a customer
+    private void deleteCustomerPhones(int customerId) throws SQLException {
+        String callProc = "{call DeleteCustomerPhones(?)}";
+
+        try (CallableStatement stmt = connection.prepareCall(callProc)) {
+            stmt.setInt(1, customerId);
+            stmt.execute();
+        }
+    }
+
+    // Helper method to add a phone number for a customer
+    private void addCustomerPhone(int customerId, String phoneNumber) throws SQLException {
+        String callProc = "{call AddCustomerPhone(?, ?)}";
+
+        try (CallableStatement stmt = connection.prepareCall(callProc)) {
+            stmt.setInt(1, customerId);
+            stmt.setString(2, phoneNumber);
+            stmt.execute();
+        }
+    }
+
+    // Helper method to delete all locations for a customer
+    private void deleteCustomerLocations(int customerId) throws SQLException {
+        String callProc = "{call DeleteCustomerLocations(?)}";
+
+        try (CallableStatement stmt = connection.prepareCall(callProc)) {
+            stmt.setInt(1, customerId);
+            stmt.execute();
+        }
+    }
+
+    // Helper method to add a location for a customer
+    public void addCustomerLocation(int customerId, Location location) throws SQLException {
+        String callProc = "{call SetCustomerLocationI(?, ?, ?, ?)}";
+
+        try (CallableStatement stmt = connection.prepareCall(callProc)) {
+            stmt.setInt(1, customerId);
+            stmt.setString(2, location.getCity());
+            stmt.setString(3, location.getStreetName());
+            stmt.setString(4, location.getStreetNumber());
+            stmt.execute();
+        }
+    }
+
+    // GET ALL operation - no stored procedure provided, using existing implementation
+    public List<Customer> getAllCustomers() throws SQLException {
         List<Customer> customers = new ArrayList<>();
+        String getCustomersSQL = "SELECT Customer_ID FROM Customer";
 
-        try (Statement customerStmt = conn.createStatement();
-             PreparedStatement phoneStmt = conn.prepareStatement(getPhoneNumbersSQL);
-             PreparedStatement locationStmt = conn.prepareStatement(getLocationsSQL);
-             ResultSet customerRs = customerStmt.executeQuery(getCustomerSQL)) {
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(getCustomersSQL)) {
 
-            // Loop through each customer
-            while (customerRs.next()) {
-                int customerId = customerRs.getInt("Customer_ID");
-                String email = customerRs.getString("Email");
-                String password = customerRs.getString("Password");
-                String firstName = customerRs.getString("First_Name");
-                String middleName = customerRs.getString("Middle_Name");
-                String lastName = customerRs.getString("Last_Name");
-
-                // Get phone numbers for the customer
-                phoneStmt.setInt(1, customerId);
-                ResultSet phoneRs = phoneStmt.executeQuery();
-                List<String> phoneNumbers = new ArrayList<>();
-                while (phoneRs.next()) {
-                    phoneNumbers.add(phoneRs.getString("CPhoneNo"));
+            while (rs.next()) {
+                int customerId = rs.getInt("Customer_ID");
+                Customer customer = getCustomerById(customerId);
+                if (customer != null) {
+                    customers.add(customer);
                 }
-
-                // Get locations for the customer
-                locationStmt.setInt(1, customerId);
-                ResultSet locationRs = locationStmt.executeQuery();
-                List<Location> locations = new ArrayList<>();
-                while (locationRs.next()) {
-                    String city = locationRs.getString("City");
-                    String streetName = locationRs.getString("Street_Name");
-                    String streetNumber = locationRs.getString("Street_Number");
-                    locations.add(new Location(city, streetName, streetNumber));
-                }
-
-                // Create a new Customer object with the retrieved data
-                Customer customer = new Customer(
-                        email,
-                        password,
-                        firstName,
-                        middleName,
-                        lastName,
-                        phoneNumbers,
-                        locations
-                );
-                customer.setCustomerId(customerId);
-                customers.add(customer);
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLException("Error retrieving customers: " + e.getMessage(), e);
+            throw new SQLException("Error retrieving all customers: " + e.getMessage(), e);
         }
 
         return customers;
+    }
+
+    // For backward compatibility
+    public List<Customer> getAllCustomers(Connection conn) throws SQLException {
+        return getAllCustomers();
+    }
+
+    /**
+     * Validates a customer's login credentials
+     * @param email The customer's email
+     * @param password The customer's password
+     * @return The Customer object if valid, null otherwise
+     * @throws SQLException if a database error occurs
+     */
+    public Customer validateCustomer(String email, String password) throws SQLException {
+        String callProc = "{call ValidateLogin(?, ?)}";
+
+        try (CallableStatement stmt = connection.prepareCall(callProc)) {
+            stmt.setString(1, email);
+            stmt.setString(2, password);
+
+            boolean hasResults = stmt.execute();
+
+            if (!hasResults) {
+                return null; // No matching customer found
+            }
+
+            ResultSet rs = stmt.getResultSet();
+            if (!rs.next()) {
+                return null; // No matching customer found
+            }
+
+            int customerId = rs.getInt("Customer_ID");
+            return getCustomerById(customerId);
+
+        } catch (SQLException e) {
+            System.err.println("Error validating customer login: " + e.getMessage());
+            throw new SQLException("Error validating customer login: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Registers a new customer in the system
+     * @param customer The customer to register
+     * @return true if registration was successful, false otherwise
+     * @throws SQLException if a database error occurs
+     */
+    public boolean registerCustomer(Customer customer) throws SQLException {
+        try {
+            insertCustomer(customer);
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Error registering customer: " + e.getMessage());
+            return false;
+        }
     }
 }

@@ -1,13 +1,17 @@
 package com.example.foodorderingsystem.DataAccessLayer;
 
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.example.foodorderingsystem.BusinessLayer.Delivery;
 import com.example.foodorderingsystem.BusinessLayer.Location;
 
-import java.sql.*;
-import java.util.*;
-
 public class DeliveryDataAccess {
-
     private final String url = "jdbc:sqlserver://localhost:1433;"
             + "databaseName=Wasly;"
             + "encrypt=true;"
@@ -20,10 +24,281 @@ public class DeliveryDataAccess {
     public DeliveryDataAccess() {
         try {
             connection = DriverManager.getConnection(url);
-            System.out.println("Connected to database.");
+            System.out.println("Connected to MSSQL successfully!");
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error connecting to database: " + e.getMessage());
         }
+    }
+
+    public void CreateDelivery(Delivery delivery) throws SQLException {
+        // Using CreateDelivery stored procedure for basic delivery info
+        String callCreateDelivery = "{call CreateDelivery(?, ?, ?, ?, ?)}";
+
+        try (CallableStatement stmt = connection.prepareCall(callCreateDelivery)) {
+            stmt.setInt(1, delivery.getDeliveryId());
+            stmt.setString(2, delivery.getFirstName());
+            stmt.setString(3, delivery.getMiddleName());
+            stmt.setString(4, delivery.getLastName());
+            stmt.setDouble(5, delivery.getSalary());
+
+            stmt.execute();
+
+            int deliveryId = delivery.getDeliveryId();
+
+            // Insert phone numbers using for loop
+            for (String phone : delivery.getPhoneNumbers()) {
+                addDeliveryPhone(deliveryId, phone);
+            }
+
+            // Insert locations using for loop
+            for (Location location : delivery.getLocations()) {
+                addDeliveryLocation(deliveryId, location);
+            }
+
+            System.out.println("Delivery created successfully with ID: " + deliveryId);
+        }
+    }
+
+    /**
+     * Creates a new delivery record in the database and returns the generated ID
+     *
+     * @param delivery The delivery object to create
+     * @return The generated delivery ID
+     * @throws SQLException if a database error occurs
+     */
+    public int createDelivery(Delivery delivery) throws SQLException {
+        // First create a new delivery record and get the ID
+        String sql = "INSERT INTO Delivery (Status) VALUES (?)";
+
+        try (java.sql.PreparedStatement stmt = connection.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, delivery.getStatus());
+
+            int affectedRows = stmt.executeUpdate();
+
+            if (affectedRows == 0) {
+                throw new SQLException("Creating delivery failed, no rows affected.");
+            }
+
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    int deliveryId = generatedKeys.getInt(1);
+                    delivery.setDeliveryId(deliveryId);
+
+                    // Save the location if provided
+                    if (delivery.getLocation() != null) {
+                        addDeliveryLocation(deliveryId, delivery.getLocation());
+                    }
+
+                    return deliveryId;
+                } else {
+                    throw new SQLException("Creating delivery failed, no ID obtained.");
+                }
+            }
+        }
+    }
+
+    private void addDeliveryPhone(int deliveryId, String phoneNumber) throws SQLException {
+        // Using AddDeliveryPhone stored procedure
+        String callAddPhone = "{call AddDeliveryPhone(?, ?)}";
+
+        try (CallableStatement stmt = connection.prepareCall(callAddPhone)) {
+            stmt.setInt(1, deliveryId);
+            stmt.setString(2, phoneNumber);
+            stmt.execute();
+        }
+    }
+
+    private void addDeliveryLocation(int deliveryId, Location location) throws SQLException {
+        // Using UpsertDeliveryLocation stored procedure
+        String callUpsertLocation = "{call UpsertDeliveryLocation(?, ?, ?, ?)}";
+
+        try (CallableStatement stmt = connection.prepareCall(callUpsertLocation)) {
+            stmt.setInt(1, deliveryId);
+            stmt.setString(2, location.getCity());
+            stmt.setString(3, location.getStreetName());
+            stmt.setString(4, location.getStreetNumber());
+            stmt.execute();
+        }
+    }
+
+    public void updateDelivery(Delivery delivery) throws SQLException {
+        // Using UpdateDelivery stored procedure for basic delivery info
+        String callUpdateDelivery = "{call UpdateDelivery(?, ?, ?, ?, ?)}";
+
+        try (CallableStatement stmt = connection.prepareCall(callUpdateDelivery)) {
+            stmt.setInt(1, delivery.getDeliveryId());
+            stmt.setString(2, delivery.getFirstName());
+            stmt.setString(3, delivery.getMiddleName());
+            stmt.setString(4, delivery.getLastName());
+            stmt.setDouble(5, delivery.getSalary());
+
+            stmt.execute();
+
+            int deliveryId = delivery.getDeliveryId();
+
+            // Update phone numbers (delete all and re-insert)
+            deleteAllDeliveryPhones(deliveryId);
+            for (String phone : delivery.getPhoneNumbers()) {
+                addDeliveryPhone(deliveryId, phone);
+            }
+
+            // Update locations (delete all and re-insert)
+            deleteDeliveryLocations(deliveryId);
+            for (Location location : delivery.getLocations()) {
+                addDeliveryLocation(deliveryId, location);
+            }
+
+            System.out.println("Delivery updated successfully.");
+        }
+    }
+
+    private void deleteAllDeliveryPhones(int deliveryId) throws SQLException {
+        // Get all phone numbers and delete them individually
+        List<String> phoneNumbers = getDeliveryPhones(deliveryId);
+        for (String phone : phoneNumbers) {
+            deleteDeliveryPhone(deliveryId, phone);
+        }
+    }
+
+    private void deleteDeliveryPhone(int deliveryId, String phoneNumber) throws SQLException {
+        // Using DeleteDeliveryPhone stored procedure
+        String callDeletePhone = "{call DeleteDeliveryPhone(?, ?)}";
+
+        try (CallableStatement stmt = connection.prepareCall(callDeletePhone)) {
+            stmt.setInt(1, deliveryId);
+            stmt.setString(2, phoneNumber);
+            stmt.execute();
+        }
+    }
+
+    private void deleteDeliveryLocations(int deliveryId) throws SQLException {
+        // Using DeleteDeliveryLocation stored procedure
+        String callDeleteLocation = "{call DeleteDeliveryLocation(?)}";
+
+        try (CallableStatement stmt = connection.prepareCall(callDeleteLocation)) {
+            stmt.setInt(1, deliveryId);
+            stmt.execute();
+        }
+    }
+
+    public void DeleteDelivery(int deliveryId) throws SQLException {
+        // First delete all phone numbers
+        deleteAllDeliveryPhones(deliveryId);
+
+        // Then delete all locations
+        deleteDeliveryLocations(deliveryId);
+
+        // Finally delete the delivery using DeleteDelivery stored procedure
+        String callDeleteDelivery = "{call DeleteDelivery(?)}";
+
+        try (CallableStatement stmt = connection.prepareCall(callDeleteDelivery)) {
+            stmt.setInt(1, deliveryId);
+            int rowsAffected = stmt.executeUpdate();
+            System.out.println(rowsAffected + " delivery record(s) deleted along with related data.");
+        }
+    }
+
+    public Delivery getDeliveryById(int deliveryId) throws SQLException {
+        // Get basic delivery info
+        String callGetDelivery = "{call GetDelivery(?)}";
+        Delivery delivery = null;
+
+        try (CallableStatement stmt = connection.prepareCall(callGetDelivery)) {
+            stmt.setInt(1, deliveryId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String firstName = rs.getString("First_Name");
+                    String middleName = rs.getString("Middle_Name");
+                    String lastName = rs.getString("Last_Name");
+                    double salary = rs.getDouble("Salary");
+
+                    // Get phone numbers
+                    List<String> phoneNumbers = getDeliveryPhones(deliveryId);
+
+                    // Get locations
+                    List<Location> locations = getDeliveryLocations(deliveryId);
+
+                    // Create delivery object
+                    delivery = new Delivery(null, null, firstName, middleName, lastName, deliveryId, salary, phoneNumbers, locations);
+                }
+            }
+        }
+
+        return delivery;
+    }
+
+    private List<String> getDeliveryPhones(int deliveryId) throws SQLException {
+        // Using GetDeliveryPhones stored procedure
+        String callGetPhones = "{call GetDeliveryPhones(?)}";
+        List<String> phoneNumbers = new ArrayList<>();
+
+        try (CallableStatement stmt = connection.prepareCall(callGetPhones)) {
+            stmt.setInt(1, deliveryId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    phoneNumbers.add(rs.getString("DPhoneNo"));
+                }
+            }
+        }
+
+        return phoneNumbers;
+    }
+
+    private List<Location> getDeliveryLocations(int deliveryId) throws SQLException {
+        // Using GetDeliveryLocation stored procedure
+        String callGetLocation = "{call GetDeliveryLocation(?)}";
+        List<Location> locations = new ArrayList<>();
+
+        try (CallableStatement stmt = connection.prepareCall(callGetLocation)) {
+            stmt.setInt(1, deliveryId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String city = rs.getString("City");
+                    String streetName = rs.getString("Street_Name");
+                    String streetNumber = rs.getString("Street_Number");
+                    locations.add(new Location(city, streetName, streetNumber));
+                }
+            }
+        }
+
+        return locations;
+    }
+
+    public List<Delivery> getAllDeliveries() throws SQLException {
+        String callGetAllDeliveries = "{call GetAllDeliveries}";
+        List<Delivery> deliveries = new ArrayList<>();
+
+        try (CallableStatement stmt = connection.prepareCall(callGetAllDeliveries);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                int deliveryId = rs.getInt("Delivery_ID");
+                String firstName = rs.getString("First_Name");
+                String middleName = rs.getString("Middle_Name");
+                String lastName = rs.getString("Last_Name");
+                double salary = rs.getDouble("Salary");
+
+                // Get phone numbers
+                List<String> phoneNumbers = getDeliveryPhones(deliveryId);
+
+                // Get locations
+                List<Location> locations = getDeliveryLocations(deliveryId);
+
+                // Create delivery object
+                Delivery delivery = new Delivery(null, null, firstName, middleName, lastName, deliveryId, salary, phoneNumbers, locations);
+                deliveries.add(delivery);
+            }
+        }
+
+        return deliveries;
+    }
+
+    // For backward compatibility with existing code
+    public Delivery GetDeliveryFull(int deliveryId) throws SQLException {
+        return getDeliveryById(deliveryId);
     }
 
     public void closeConnection() {
@@ -33,107 +308,7 @@ public class DeliveryDataAccess {
                 System.out.println("Connection closed.");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error closing connection: " + e.getMessage());
         }
     }
-
-    // INSERT
-    public void insertDelivery(Delivery delivery) throws SQLException {
-        String insertDeliverySQL = "INSERT INTO Delivery (Delivery_ID, First_Name, Middle_Name, Last_Name, Salary) VALUES (?, ?, ?, ?, ?)";
-        String insertPhoneSQL = "INSERT INTO Del_PhoneNo (Delivery_ID, DelPhoneNo) VALUES (?, ?)";
-        String insertLocationSQL = "INSERT INTO Del_Location (Delivery_ID, City, Street_Name, Street_Number) VALUES (?, ?, ?, ?)";
-
-        try (PreparedStatement deliveryStmt = connection.prepareStatement(insertDeliverySQL);
-             PreparedStatement phoneStmt = connection.prepareStatement(insertPhoneSQL);
-             PreparedStatement locationStmt = connection.prepareStatement(insertLocationSQL)) {
-
-            deliveryStmt.setInt(1, delivery.getDeliveryId());
-            deliveryStmt.setString(2, delivery.getFirstName());
-            deliveryStmt.setString(3, delivery.getMiddleName());
-            deliveryStmt.setString(4, delivery.getLastName());
-            deliveryStmt.setDouble(5, delivery.getSalary());
-            deliveryStmt.executeUpdate();
-
-            for (String phone : delivery.getPhoneNumbers()) {
-                phoneStmt.setInt(1, delivery.getDeliveryId());
-                phoneStmt.setString(2, phone);
-                phoneStmt.executeUpdate();
-            }
-
-            // Only one location allowed per Delivery_ID (due to PK)
-            if (!delivery.getLocations().isEmpty()) {
-                Location loc = delivery.getLocations().get(0);
-                locationStmt.setInt(1, delivery.getDeliveryId());
-                locationStmt.setString(2, loc.getCity());
-                locationStmt.setString(3, loc.getStreetName());
-                locationStmt.setString(4, loc.getStreetNumber());
-                locationStmt.executeUpdate();
-            }
-
-            System.out.println("Delivery record inserted successfully.");
-        }
-    }
-
-    public void updateDelivery(Delivery delivery) throws SQLException {
-        String updateDeliverySQL = "UPDATE Delivery SET First_Name = ?, Middle_Name = ?, Last_Name = ?, Salary = ? WHERE Delivery_ID = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(updateDeliverySQL)) {
-            stmt.setString(1, delivery.getFirstName());
-            stmt.setString(2, delivery.getMiddleName());
-            stmt.setString(3, delivery.getLastName());
-            stmt.setDouble(4, delivery.getSalary());
-            stmt.setInt(5, delivery.getDeliveryId());
-            stmt.executeUpdate();
-        }
-
-        deletePhones(delivery.getDeliveryId());
-        insertPhones(delivery);
-
-        deleteLocation(delivery.getDeliveryId());
-        insertLocation(delivery);
-
-        System.out.println("Delivery record updated (phones and location reinserted).");
-    }
-
-    private void deletePhones(int deliveryId) throws SQLException {
-        String deleteSQL = "DELETE FROM Del_PhoneNo WHERE Delivery_ID = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(deleteSQL)) {
-            stmt.setInt(1, deliveryId);
-            stmt.executeUpdate();
-        }
-    }
-
-    private void insertPhones(Delivery delivery) throws SQLException {
-        String insertSQL = "INSERT INTO Del_PhoneNo (Delivery_ID, DelPhoneNo) VALUES (?, ?)";
-        try (PreparedStatement stmt = connection.prepareStatement(insertSQL)) {
-            for (String phone : delivery.getPhoneNumbers()) {
-                stmt.setInt(1, delivery.getDeliveryId());
-                stmt.setString(2, phone);
-                stmt.executeUpdate();
-            }
-        }
-    }
-
-    private void deleteLocation(int deliveryId) throws SQLException {
-        String deleteSQL = "DELETE FROM Del_Location WHERE Delivery_ID = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(deleteSQL)) {
-            stmt.setInt(1, deliveryId);
-            stmt.executeUpdate();
-        }
-    }
-
-    private void insertLocation(Delivery delivery) throws SQLException {
-        if (delivery.getLocations() == null || delivery.getLocations().isEmpty()) return;
-
-        Location loc = delivery.getLocations().get(0); // single location per delivery
-        String insertSQL = "INSERT INTO Del_Location (Delivery_ID, City, Street_Name, Street_Number) VALUES (?, ?, ?, ?)";
-
-        try (PreparedStatement stmt = connection.prepareStatement(insertSQL)) {
-            stmt.setInt(1, delivery.getDeliveryId());
-            stmt.setString(2, loc.getCity());
-            stmt.setString(3, loc.getStreetName());
-            stmt.setString(4, loc.getStreetNumber());
-            stmt.executeUpdate();
-        }
-    }
-
 }

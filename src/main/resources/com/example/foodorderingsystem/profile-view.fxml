@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.foodorderingsystem.PresentationLayer.ProfileController"
+            prefHeight="600.0" prefWidth="900.0"
+            stylesheets="@styles/main-styles.css">
+
+    <!-- Top Navigation Bar -->
+    <top>
+        <VBox>
+            <HBox styleClass="nav-bar" alignment="CENTER_LEFT" spacing="15.0">
+                <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                    <Label text="Wasly" style="-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                </HBox>
+
+                <HBox alignment="CENTER" spacing="10.0">
+                    <Button fx:id="homeButton" text="Home" styleClass="nav-button" onAction="#handleHomeButton"/>
+                    <Button fx:id="restaurantsButton" text="Restaurants" styleClass="nav-button" onAction="#handleRestaurantsButton"/>
+                    <Button fx:id="ordersButton" text="My Orders" styleClass="nav-button" onAction="#handleOrdersButton"/>
+                </HBox>
+
+                <HBox alignment="CENTER_RIGHT" spacing="10.0" HBox.hgrow="ALWAYS">
+                    <Button fx:id="cartButton" styleClass="nav-button" onAction="#handleCartButton">
+                        <graphic>
+                            <HBox spacing="5" alignment="CENTER">
+                                <Label text="Cart" style="-fx-text-fill: white;"/>
+                                <Label fx:id="cartItemCount" text="0" style="-fx-text-fill: white; -fx-background-color: rgba(255,255,255,0.2); -fx-padding: 2 6; -fx-background-radius: 10;"/>
+                            </HBox>
+                        </graphic>
+                    </Button>
+                    <Button fx:id="profileButton" text="Profile" styleClass="nav-button" onAction="#handleProfileButton"/>
+                    <Button fx:id="logoutButton" text="Logout" styleClass="nav-button" onAction="#handleLogoutButton"/>
+                </HBox>
+
+                <padding>
+                    <Insets left="20.0" right="20.0"/>
+                </padding>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- Main Content Area -->
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+            <VBox spacing="30" style="-fx-padding: 30;">
+                <!-- Profile Header Section -->
+                <HBox spacing="20">
+                    <ImageView fitHeight="120" fitWidth="120" preserveRatio="true"
+                              style="-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 3); -fx-background-radius: 60;">
+                        <Image url="@images/profile-placeholder.png"/>
+                    </ImageView>
+
+                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                        <Label fx:id="userFullNameLabel" text="Full Name" styleClass="label-header"/>
+                        <Label fx:id="userEmailLabel" text="user@example.com" styleClass="label-subheader"
+                               style="-fx-font-size: 14px; -fx-font-weight: normal; -fx-text-fill: #757575;"/>
+                        <HBox spacing="10" style="-fx-padding: 10 0 0 0;">
+                            <Button text="Edit Profile" onAction="#handleEditProfile"/>
+                            <Button text="Change Password" onAction="#handleChangePassword" styleClass="button-accent"/>
+                        </HBox>
+                    </VBox>
+                </HBox>
+
+                <!-- Account Information Section -->
+                <VBox spacing="15" style="-fx-background-color: white; -fx-background-radius: 8px; -fx-padding: 20;
+                                         -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                    <Label text="Account Information" styleClass="label-subheader"/>
+
+                    <GridPane hgap="15" vgap="15">
+                        <columnConstraints>
+                            <ColumnConstraints minWidth="100" prefWidth="150" maxWidth="200" />
+                            <ColumnConstraints hgrow="ALWAYS" />
+                        </columnConstraints>
+
+                        <Label text="First Name:" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                        <Label fx:id="firstNameLabel" text="First Name" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                        <Label text="Middle Name:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                        <Label fx:id="middleNameLabel" text="Middle Name" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                        <Label text="Last Name:" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                        <Label fx:id="lastNameLabel" text="Last Name" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                        <Label text="Email:" GridPane.rowIndex="3" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                        <Label fx:id="emailLabel" text="user@example.com" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                        <Label text="Account Created:" GridPane.rowIndex="4" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                        <Label fx:id="createdDateLabel" text="May 1, 2025" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                    </GridPane>
+                </VBox>
+
+                <!-- Addresses Section -->
+                <VBox spacing="15" style="-fx-background-color: white; -fx-background-radius: 8px; -fx-padding: 20;
+                                         -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="My Addresses" styleClass="label-subheader" HBox.hgrow="ALWAYS"/>
+                        <Button text="Add New Address" onAction="#handleAddAddress" styleClass="button-accent"/>
+                    </HBox>
+
+                    <VBox fx:id="addressesContainer" spacing="15">
+                        <!-- Address cards will be added here dynamically -->
+                    </VBox>
+                </VBox>
+
+                <!-- Phone Numbers Section -->
+                <VBox spacing="15" style="-fx-background-color: white; -fx-background-radius: 8px; -fx-padding: 20;
+                                         -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="My Phone Numbers" styleClass="label-subheader" HBox.hgrow="ALWAYS"/>
+                        <Button text="Add New Phone" onAction="#handleAddPhone" styleClass="button-accent"/>
+                    </HBox>
+
+                    <VBox fx:id="phonesContainer" spacing="15">
+                        <!-- Phone number entries will be added here dynamically -->
+                    </VBox>
+                </VBox>
+
+                <!-- Payment Methods Section -->
+                <VBox spacing="15" style="-fx-background-color: white; -fx-background-radius: 8px; -fx-padding: 20;
+                                         -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="My Payment Methods" styleClass="label-subheader" HBox.hgrow="ALWAYS"/>
+                        <Button text="Add Payment Method" onAction="#handleAddPayment" styleClass="button-accent"/>
+                    </HBox>
+
+                    <VBox fx:id="paymentsContainer" spacing="15">
+                        <!-- Payment method cards will be added here dynamically -->
+                    </VBox>
+                </VBox>
+
+                <!-- Account Actions Section -->
+                <VBox spacing="15" style="-fx-background-color: white; -fx-background-radius: 8px; -fx-padding: 20;
+                                         -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                    <Label text="Account Actions" styleClass="label-subheader"/>
+
+                    <HBox spacing="10">
+                        <Button text="Delete Account" styleClass="button" style="-fx-background-color: #f44336;" onAction="#handleDeleteAccount"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- Status Bar -->
+    <bottom>
+        <HBox style="-fx-background-color: -light-gray; -fx-padding: 5 20;">
+            <Label text="© 2025 Wasly Food Ordering System" style="-fx-text-fill: -text-color;"/>
+        </HBox>
+    </bottom>
+</BorderPane>

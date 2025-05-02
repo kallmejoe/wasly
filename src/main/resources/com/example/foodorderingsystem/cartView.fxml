@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="700.0" prefWidth="1000.0" styleClass="background"
+            stylesheets="@styles/main-styles.css"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.foodorderingsystem.PresentationLayer.CartController">
+   <children>
+      <AnchorPane layoutX="10.0" layoutY="10.0" prefHeight="680.0" prefWidth="980.0" styleClass="content-pane" AnchorPane.topAnchor="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0">
+         <children>
+            <HBox layoutX="14.0" layoutY="14.0" spacing="10.0" styleClass="header" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0">
+               <children>
+                  <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <!-- Replace SVG with PNG or JPG -->
+                        <Image url="@images/shopping-cart.svg" />
+                     </image>
+                  </ImageView>
+                  <Label styleClass="header-text" text="Your Cart">
+                     <font>
+                        <Font name="System Bold" size="24.0" />
+                     </font>
+                  </Label>
+               </children>
+               <padding>
+                  <Insets bottom="10.0" top="10.0" />
+               </padding>
+            </HBox>
+
+            <ScrollPane fitToWidth="true" layoutX="14.0" layoutY="92.0" prefHeight="431.0"
+                        styleClass="transparent-scroll-pane" AnchorPane.topAnchor="92.0"
+                        AnchorPane.bottomAnchor="157.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0">
+               <content>
+                  <TableView fx:id="cartTableView" prefHeight="429.0" styleClass="cart-table">
+                     <columns>
+                        <TableColumn fx:id="imageColumn" prefWidth="100.0" text="Product" />
+                        <TableColumn fx:id="nameColumn" prefWidth="300.0" text="Name" />
+                        <TableColumn fx:id="priceColumn" prefWidth="150.0" text="Price" />
+                        <TableColumn fx:id="quantityColumn" prefWidth="120.0" text="Quantity" />
+                        <TableColumn fx:id="totalColumn" prefWidth="150.0" text="Total" />
+                        <TableColumn fx:id="actionColumn" prefWidth="120.0" text="Action" />
+                     </columns>
+                  </TableView>
+               </content>
+            </ScrollPane>
+
+            <AnchorPane layoutX="14.0" layoutY="531.0" prefHeight="129.0" prefWidth="952.0"
+                        styleClass="summary-panel" AnchorPane.bottomAnchor="20.0"
+                        AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0">
+               <children>
+                  <VBox layoutX="14.0" layoutY="14.0" spacing="8.0" AnchorPane.topAnchor="14.0" AnchorPane.leftAnchor="14.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label styleClass="summary-label" text="Subtotal:" />
+                              <Label fx:id="subtotalLabel" styleClass="summary-value" text="" />
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label styleClass="summary-label" text="Delivery Fee:" />
+                              <Label fx:id="deliveryFeeLabel" styleClass="summary-value" text="" />
+                           </children>
+                        </HBox>
+                        <Separator prefWidth="200.0" />
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label styleClass="summary-label-total" text="Total:" />
+                              <Label fx:id="totalLabel" styleClass="summary-value-total" text="" />
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+                  <HBox alignment="CENTER" layoutX="710.0" layoutY="38.0" spacing="15.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="38.0">
+                     <children>
+                        <Button fx:id="continueShoppingButton" mnemonicParsing="false" onAction="#onContinueShoppingClicked" styleClass="secondary-button" text="Continue Shopping">
+                           <effect>
+                              <DropShadow height="4.0" radius="1.5" width="4.0" />
+                           </effect>
+                        </Button>
+                        <Button fx:id="checkoutButton" mnemonicParsing="false" onAction="#onCheckoutClicked" styleClass="primary-button" text="Proceed to Checkout">
+                           <effect>
+                              <DropShadow height="4.0" radius="1.5" width="4.0" />
+                           </effect>
+                        </Button>
+                     </children>
+                  </HBox>
+               </children>
+            </AnchorPane>
+
+            <HBox alignment="CENTER_LEFT" layoutX="14.0" layoutY="63.0" spacing="5.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0">
+               <children>
+                  <Label fx:id="cartItemsCountLabel" styleClass="cart-count-label" text="0 items in your cart" />
+                  <Button fx:id="clearCartButton" mnemonicParsing="false" onAction="#onClearCartClicked" styleClass="danger-button" text="Clear Cart" />
+               </children>
+            </HBox>
+
+            <Label fx:id="emptyCartLabel" alignment="CENTER" layoutX="452.0" layoutY="308.0"
+                   styleClass="empty-cart-label" text="Your cart is empty" visible="false"
+                   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>

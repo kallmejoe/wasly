@@ -4,13 +4,41 @@ public class Payment {
     private int paymentId;
     private String status;
     private String method;
+    private int orderId;
+    private int customerId;
     private Delivery delivery;
     private Restaurant restaurant;
+    private double amount; // Added amount field
+
+    // Default constructor for creating empty payment objects
+    public Payment() {
+    }
 
     public Payment(int paymentId, String status, String method, Delivery delivery, Restaurant restaurant) {
         this.paymentId = paymentId;
         this.status = status;
         this.method = method;
+        this.delivery = delivery;
+        this.restaurant = restaurant;
+    }
+
+    // New constructor with orderId and customerId
+    public Payment(int paymentId, String status, String method, int orderId, int customerId, Delivery delivery, Restaurant restaurant) {
+        this.paymentId = paymentId;
+        this.status = status;
+        this.method = method;
+        this.orderId = orderId;
+        this.customerId = customerId;
+        this.delivery = delivery;
+        this.restaurant = restaurant;
+    }
+
+    // Constructor with amount
+    public Payment(int paymentId, String status, String method, double amount, Delivery delivery, Restaurant restaurant) {
+        this.paymentId = paymentId;
+        this.status = status;
+        this.method = method;
+        this.amount = amount;
         this.delivery = delivery;
         this.restaurant = restaurant;
     }
@@ -40,6 +68,22 @@ public class Payment {
         this.method = method;
     }
 
+    public int getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
+    }
+
+    public int getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(int customerId) {
+        this.customerId = customerId;
+    }
+
     public Delivery getDelivery() {
         return delivery;
     }
@@ -54,5 +98,13 @@ public class Payment {
 
     public void setRestaurant(Restaurant restaurant) {
         this.restaurant = restaurant;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
     }
 }
