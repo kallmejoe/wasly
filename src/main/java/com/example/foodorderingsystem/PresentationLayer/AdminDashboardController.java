@@ -1,42 +1,42 @@
-//package com.example.foodorderingsystem.PresentationLayer;
-//
-//import com.example.foodorderingsystem.BusinessLayer.*;
-//import com.example.foodorderingsystem.DataAccessLayer.*;
-//import javafx.beans.property.SimpleStringProperty;
-//import javafx.collections.FXCollections;
-//import javafx.fxml.FXML;
-//import javafx.fxml.FXMLLoader;
-//import javafx.scene.Scene;
-//import javafx.scene.control.*;
-//import javafx.scene.control.cell.PropertyValueFactory;
-//import javafx.scene.image.Image;
-//import javafx.scene.image.ImageView;
-//import javafx.scene.layout.GridPane;
-//import javafx.scene.layout.HBox;
-//import javafx.scene.layout.VBox;
-//import javafx.scene.control.Alert.AlertType;
-//import javafx.stage.Stage;
-//import javafx.util.Callback;
-//import javafx.util.StringConverter;
-//import javafx.geometry.Insets;
-//import javafx.scene.control.Pagination;
-//import javafx.scene.control.ScrollPane;
-//
-//import java.io.IOException;
-//import java.math.BigDecimal;
-//import java.sql.SQLException;
-//import java.text.NumberFormat;
-//import java.time.format.DateTimeFormatter;
-//import java.util.List;
-//import java.util.Optional;
-//
-//public class AdminDashboardController {
-//
-//    @FXML private Label sectionTitleLabel;
-//    @FXML private Label statusLabel;
-//    @FXML private Label lblItemCount;
-//    @FXML private Button addButton;
-//    @FXML private Button refreshButton;
+package com.example.foodorderingsystem.PresentationLayer;
+
+import com.example.foodorderingsystem.BusinessLayer.*;
+import com.example.foodorderingsystem.DataAccessLayer.*;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.control.Alert.AlertType;
+import javafx.stage.Stage;
+import javafx.util.Callback;
+import javafx.util.StringConverter;
+import javafx.geometry.Insets;
+import javafx.scene.control.Pagination;
+import javafx.scene.control.ScrollPane;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
+
+public class AdminDashboardController {
+
+    @FXML private Label sectionTitleLabel;
+    @FXML private Label statusLabel;
+    @FXML private Label lblItemCount;
+    @FXML private Button addButton;
+    @FXML private Button refreshButton;
 //    @FXML private Button logoutButton;
 //    @FXML private Pagination pagination;
 //
@@ -1658,4 +1658,5 @@
 //
 //    private final NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
 //    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-//}
+//
+}

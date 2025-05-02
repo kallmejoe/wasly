@@ -190,7 +190,18 @@ public class RegisterController {
             showError("Error loading dashboard: " + e.getMessage());
         }
     }
-
+    @FXML
+    protected void handleAdminRegisterLink(ActionEvent event) {
+        try {
+            Parent adminRegisterView = FXMLLoader.load(getClass().getResource("/com/example/foodorderingsystem/admin-register-view.fxml"));
+            Scene adminRegisterScene = new Scene(adminRegisterView);
+            Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            window.setScene(adminRegisterScene);
+            window.show();
+        } catch (IOException e) {
+            showError("Error navigating to admin registration: " + e.getMessage());
+        }
+    }
     private void showError(String message) {
         errorMessage.setText(message);
         errorMessage.setVisible(true);
