@@ -42,7 +42,74 @@ public class OrderDataAccess {
         }
     }
 
-    public void placeOrder(Order order) throws SQLException {
+    /**
+     * Creates a new order from an Order object
+     * @param order The Order object to create in the database
+     * @return The ID of the created order, or -1 if creation failed
+     */
+    public int createOrder(Order order) throws SQLException {
+        String sql = "INSERT INTO Orders (Order_Date, Customer_ID, Restaurant_ID, Status, Total_Amount) " +
+                     "VALUES (?, ?, ?, ?, ?)";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setTimestamp(1, Timestamp.valueOf(order.getOrderDate()));
+            stmt.setInt(2, order.getCustomer().getCustomerId());
+            stmt.setInt(3, order.getRestaurant().getRestaurantId());
+            stmt.setString(4, order.getStatus());
+            stmt.setDouble(5, order.getTotalAmount());
+
+            int affectedRows = stmt.executeUpdate();
+
+            if (affectedRows == 0) {
+                throw new SQLException("Creating order failed, no rows affected.");
+            }
+
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    int orderId = generatedKeys.getInt(1);
+
+                    // Save payment info if available
+                    if (order.getPayment() != null) {
+                        Payment payment = order.getPayment();
+                        payment.setOrderId(orderId);
+                        int paymentId = paymentDataAccess.createPayment(payment);
+                        payment.setPaymentId(paymentId);
+
+                        // Update the order with payment ID
+                        updateOrderPayment(orderId, paymentId);
+                    }
+
+                    return orderId;
+                } else {
+                    throw new SQLException("Creating order failed, no ID obtained.");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error creating order: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Updates the order with payment information
+     * @param orderId The ID of the order to update
+     * @param paymentId The ID of the payment to associate
+     * @throws SQLException if a database error occurs
+     */
+    private void updateOrderPayment(int orderId, int paymentId) throws SQLException {
+        String sql = "UPDATE Orders SET Payment_ID = ? WHERE Order_ID = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, paymentId);
+            stmt.setInt(2, orderId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Error updating order payment: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public int placeOrder(Order order) throws SQLException {
         // Using PlaceOrder stored procedure
         String callPlaceOrder = "{call PlaceOrder(?, ?, ?, ?, ?, ?)}";
 
@@ -60,6 +127,7 @@ public class OrderDataAccess {
             System.err.println("Error placing order: " + e.getMessage());
             throw e;
         }
+        return order.getOrderId();
     }
 
     /**
@@ -99,12 +167,12 @@ public class OrderDataAccess {
             int paymentId = paymentDataAccess.createPayment(payment);
             payment.setPaymentId(paymentId);
 
-//            // Create a new delivery
+            // Create a new delivery
 //            Delivery delivery = new Delivery();
 //            delivery.setLocation(deliveryLocation);
 //            delivery.setStatus("Pending"); // Initial status
-//
-//            // Store the delivery
+
+            // Store the delivery
 //            int deliveryId = deliveryDataAccess.createDelivery(delivery);
 //            delivery.setDeliveryId(deliveryId);
 

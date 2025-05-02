@@ -51,6 +51,11 @@ public class CategoryDataAccess {
         }
     }
 
+    // Alias for createCategory to match the naming convention expected in error messages
+    public void insertCategory(Category category) throws SQLException {
+        createCategory(category);
+    }
+
     // READ operation using GetAllCategories stored procedure
     public List<Category> getAllCategories() throws SQLException {
         String callProc = "{call GetAllCategories}";

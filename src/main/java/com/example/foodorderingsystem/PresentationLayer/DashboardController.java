@@ -4,6 +4,7 @@ import com.example.foodorderingsystem.BusinessLayer.Account;
 import com.example.foodorderingsystem.BusinessLayer.Customer;
 import com.example.foodorderingsystem.BusinessLayer.Restaurant;
 import com.example.foodorderingsystem.DataAccessLayer.RestaurantDataAccess;
+import com.example.foodorderingsystem.FoodOrderingApp;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -158,14 +159,21 @@ public class DashboardController implements Initializable {
             // Store selected restaurant in session for access on the restaurant view
             SessionManager.getInstance().setSelectedRestaurant(restaurant);
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/foodorderingsystem/restaurant-view.fxml"));
-            Parent restaurantView = loader.load();
+            // Load the restaurantView.fxml resource
+            Parent restaurantView = FXMLLoader.load(getClass().getResource("/com/example/foodorderingsystem/restaurantView.fxml"));
             Scene scene = new Scene(restaurantView);
             Stage stage = (Stage) allRestaurantsContainer.getScene().getWindow();
             stage.setScene(scene);
             stage.show();
         } catch (IOException e) {
             System.err.println("Error loading restaurant view: " + e.getMessage());
+
+            // Show error dialog
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+            alert.setTitle("Navigation Error");
+            alert.setHeaderText("Could not load restaurant view");
+            alert.setContentText("An error occurred: " + e.getMessage());
+            alert.showAndWait();
         }
     }
 

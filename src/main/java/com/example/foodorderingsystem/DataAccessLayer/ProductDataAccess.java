@@ -59,7 +59,7 @@ public class ProductDataAccess {
 
     // INSERT operation using stored procedure
     public void insertProduct(Product product) throws SQLException {
-        String callProc = "{call CreateProductWithImage(?, ?, ?, ?, ?, ?)}";
+        String callProc = "{call CreateProuct(?, ?, ?, ?, ?, ?)}";
 
         try (CallableStatement stmt = connection.prepareCall(callProc)) {
             // Set parameters for the stored procedure
@@ -149,7 +149,7 @@ public class ProductDataAccess {
 
     // GET BY ID operation using stored procedure
     public Product getProductById(int productId) throws SQLException {
-        String callProc = "{call GetProductFullDetails(?)}";
+        String callProc = "{call GetProductWithImageById(?)}";
 
         try (CallableStatement stmt = connection.prepareCall(callProc)) {
             stmt.setInt(1, productId);
@@ -227,7 +227,7 @@ public class ProductDataAccess {
 
     // Get products by restaurant ID
     public List<Product> getProductsByRestaurant(int restaurantId) throws SQLException {
-        String callProc = "{call GetProductsByRestaurant(?)}";
+        String callProc = "{call GetAllProductsWithImages(?)}";
         List<Product> products = new ArrayList<>();
 
         try (CallableStatement stmt = connection.prepareCall(callProc)) {
@@ -291,10 +291,10 @@ public class ProductDataAccess {
 
     // Helper method to add an image for a product
     private void addProductImage(ProductImage image) throws SQLException {
-        String callProc = "{call AddProductImage(?, ?, ?)}";
+        String callProc = "{call CreateProductImage(?, ?, ?)}";
 
         try (CallableStatement stmt = connection.prepareCall(callProc)) {
-            stmt.setString(1, image.getImageName());
+            stmt.setString(1, image.getImageName() + ".jpg");
             stmt.setInt(2, image.getProductId());
             stmt.setString(3, image.getAlt());
             stmt.execute();

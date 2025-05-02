@@ -12,6 +12,12 @@ public class Order {
     private double totalAmount;
     private String status;
 
+    // No-argument constructor
+    public Order() {
+        this.orderDate = LocalDateTime.now();
+        this.status = "Pending"; // Default status
+    }
+
     public Order(int orderId, LocalDateTime orderDate, Customer customer,
                  Restaurant restaurant, Delivery delivery, Payment payment) {
         this.orderId = orderId;

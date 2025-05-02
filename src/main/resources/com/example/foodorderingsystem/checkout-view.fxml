@@ -133,15 +133,15 @@
                         </columnConstraints>
 
                         <Label text="Subtotal:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                        <Label fx:id="subtotalLabel" text="$0.00" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        <Label fx:id="subtotalLabel" text=" " GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
                         <Label text="Delivery Fee:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                        <Label fx:id="deliveryFeeLabel" text="$0.00" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <Label fx:id="deliveryFeeLabel" text=" " GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
                         <Separator GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="2" />
 
                         <Label text="Total:" styleClass="label-subheader" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                        <Label fx:id="totalLabel" text="$0.00" styleClass="label-subheader" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <Label fx:id="totalLabel" text=" " styleClass="label-subheader" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                     </GridPane>
                 </VBox>
 

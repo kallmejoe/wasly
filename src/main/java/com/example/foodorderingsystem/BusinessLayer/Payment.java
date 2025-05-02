@@ -68,6 +68,16 @@ public class Payment {
         this.method = method;
     }
 
+    // Alias for setMethod to support setPaymentMethod calls
+    public void setPaymentMethod(String method) {
+        this.method = method;
+    }
+
+    // Alias for getMethod to support getPaymentMethod calls
+    public String getPaymentMethod() {
+        return this.method;
+    }
+
     public int getOrderId() {
         return orderId;
     }

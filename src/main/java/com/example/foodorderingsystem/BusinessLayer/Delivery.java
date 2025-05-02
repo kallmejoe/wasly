@@ -1,4 +1,5 @@
 package com.example.foodorderingsystem.BusinessLayer;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Delivery extends Account {
@@ -9,13 +10,13 @@ public class Delivery extends Account {
     private Location location; // Single location for a delivery
     private String status; // Added status field
 
-//    // Constructor for Delivery class
+    // Constructor for Delivery class
 //    public Delivery(){
 //        super();
 //        this.deliveryId = 0;
 //        this.salary = 0.0;
-//        this.phoneNumbers = null;
-//        this.locations = null;
+//        this.phoneNumbers = new ArrayList<>();
+//        this.locations = new ArrayList<>();
 //        this.location = null; // Initialize to null
 //        this.status = ""; // Initialize to empty string
 //    }
@@ -27,6 +28,9 @@ public class Delivery extends Account {
         this.salary = salary;
         this.phoneNumbers = phoneNumbers;
         this.locations = locations;
+        if (locations != null && !locations.isEmpty()) {
+            this.location = locations.get(0);
+        }
     }
 
     public int getDeliveryId() { return deliveryId; }
@@ -39,7 +43,12 @@ public class Delivery extends Account {
     public void setPhoneNumbers(List<String> phoneNumbers) { this.phoneNumbers = phoneNumbers; }
 
     public List<Location> getLocations() { return locations; }
-    public void setLocations(List<Location> locations) { this.locations = locations; }
+    public void setLocations(List<Location> locations) {
+        this.locations = locations;
+        if (locations != null && !locations.isEmpty()) {
+            this.location = locations.get(0);
+        }
+    }
 
     // Added methods to fix errors
     public Location getLocation() { return location; }
@@ -47,4 +56,14 @@ public class Delivery extends Account {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    // For compatibility with errors about getDeliveryPerson()
+    public Delivery getDeliveryPerson() {
+        return this;
+    }
+
+    // For ID compatibility
+    public int getId() {
+        return deliveryId;
+    }
 }

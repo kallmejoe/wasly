@@ -54,38 +54,6 @@ public class PaymentDataAccess {
         }
     }
 
-    /**
-     * Creates a new payment in the database and returns the generated payment ID
-     *
-     * @param payment The payment object to be created
-     * @return The generated payment ID
-     * @throws SQLException if a database error occurs
-     */
-    public int createPayment(Payment payment) throws SQLException {
-        String sql = "INSERT INTO Payment (Method, Status, Amount) VALUES (?, ?, ?)";
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, payment.getMethod());
-            stmt.setString(2, payment.getStatus());
-            stmt.setDouble(3, payment.getAmount());
-
-            int affectedRows = stmt.executeUpdate();
-
-            if (affectedRows == 0) {
-                throw new SQLException("Creating payment failed, no rows affected.");
-            }
-
-            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    int paymentId = generatedKeys.getInt(1);
-                    payment.setPaymentId(paymentId);
-                    return paymentId;
-                } else {
-                    throw new SQLException("Creating payment failed, no ID obtained.");
-                }
-            }
-        }
-    }
 
     public Payment getPaymentById(int paymentId) throws SQLException {
         // Using a more general query since no specific stored procedure provided

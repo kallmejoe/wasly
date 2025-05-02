@@ -12,11 +12,29 @@ public class Product {
     private Restaurant restaurant; // Changed from restaurantId to Restaurant object
     private Category category;     // Changed from categoryId to Category object
     private List<ProductImage> images;
+    private String description;
+
+    public Product() {
+        this.images = new ArrayList<>();
+    }
 
     public Product(int productId, String name, BigDecimal unitPrice, int amountInStock,
                    Restaurant restaurant, Category category) {
         this.productId = productId;
         this.name = name;
+        this.unitPrice = unitPrice;
+        this.amountInStock = amountInStock;
+        this.restaurant = restaurant;
+        this.category = category;
+        this.images = new ArrayList<>();
+    }
+
+    // Constructor with description
+    public Product(int productId, String name, String description, BigDecimal unitPrice, int amountInStock,
+                   Restaurant restaurant, Category category) {
+        this.productId = productId;
+        this.name = name;
+        this.description = description;
         this.unitPrice = unitPrice;
         this.amountInStock = amountInStock;
         this.restaurant = restaurant;
@@ -71,6 +89,14 @@ public class Product {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public BigDecimal getUnitPrice() {
@@ -138,6 +164,7 @@ public class Product {
     public String toString() {
         return "Product [productId=" + productId +
                ", name=" + name +
+               (description != null ? ", description=" + description : "") +
                ", unitPrice=" + unitPrice +
                ", amountInStock=" + amountInStock +
                ", restaurant=" + (restaurant != null ? restaurant.getName() : "null") +
