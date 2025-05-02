@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane prefHeight="600.0" prefWidth="900.0" styleClass="background" stylesheets="@styles/main-styles.css"
+            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.foodorderingsystem.PresentationLayer.RestaurantController">
+
+    <!-- Top Navigation Bar -->
+    <top>
+        <VBox>
+            <HBox styleClass="nav-bar" alignment="CENTER_LEFT" spacing="15.0">
+                <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                    <Label text="Wasly" style="-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                </HBox>
+
+                <HBox alignment="CENTER" spacing="10.0">
+                    <Button fx:id="homeButton" text="Home" styleClass="nav-button" onAction="#handleHomeButton"/>
+                    <Button fx:id="restaurantsButton" text="Restaurants" styleClass="nav-button" onAction="#handleRestaurantsButton"/>
+                    <Button fx:id="ordersButton" text="My Orders" styleClass="nav-button" onAction="#handleOrdersButton"/>
+                </HBox>
+
+                <HBox alignment="CENTER_RIGHT" spacing="10.0" HBox.hgrow="ALWAYS">
+                    <Button fx:id="cartButton" styleClass="nav-button" onAction="#handleCartButton">
+                        <graphic>
+                            <HBox spacing="5" alignment="CENTER">
+                                <Label text="Cart" style="-fx-text-fill: white;"/>
+                                <Label fx:id="cartItemCount" text="0" style="-fx-text-fill: white; -fx-background-color: rgba(255,255,255,0.2); -fx-padding: 2 6; -fx-background-radius: 10;"/>
+                            </HBox>
+                        </graphic>
+                    </Button>
+                    <Button fx:id="profileButton" text="Profile" styleClass="nav-button" onAction="#handleProfileButton"/>
+                    <Button fx:id="logoutButton" text="Logout" styleClass="nav-button" onAction="#handleLogoutButton"/>
+                </HBox>
+
+                <padding>
+                    <Insets left="20.0" right="20.0"/>
+                </padding>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- Main Content Area -->
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+            <VBox spacing="20" style="-fx-padding: 20;">
+                <!-- Restaurant Header -->
+                <HBox spacing="20" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 4);">
+                    <ImageView fx:id="restaurantImage" fitHeight="120" fitWidth="120" preserveRatio="true"
+                            style="-fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 3);">
+                        <Image url="@images/restaurant-placeholder.svg"/>
+                    </ImageView>
+
+                    <VBox spacing="5" HBox.hgrow="ALWAYS">
+                        <Label fx:id="restaurantNameLabel" text="Restaurant Name" styleClass="restaurant-name" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+                        <HBox spacing="5" alignment="CENTER_LEFT">
+                            <ImageView fitWidth="16" fitHeight="16">
+                                <Image url="@images/location-pin.svg"/>
+                            </ImageView>
+                            <Label fx:id="restaurantAddressLabel" text="Restaurant Address" styleClass="text-muted"/>
+                        </HBox>
+                        <HBox spacing="5" alignment="CENTER_LEFT">
+                            <ImageView fitWidth="16" fitHeight="16">
+                                <Image url="@images/phone.svg"/>
+                            </ImageView>
+                            <Label fx:id="restaurantPhoneLabel" text="Phone: Not available" styleClass="text-muted"/>
+                        </HBox>
+                    </VBox>
+                </HBox>
+
+                <!-- Menu Section -->
+                <VBox spacing="10" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 4);" VBox.vgrow="ALWAYS">
+                    <Label text="Menu" styleClass="label-subheader" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+
+                    <!-- Tabs for Categories -->
+                    <TabPane fx:id="categoriesTabPane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" styleClass="floating-tab-pane">
+                        <!-- Tabs will be added programmatically -->
+                    </TabPane>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- Right Sidebar - Cart Summary -->
+    <right>
+        <VBox style="-fx-background-color: #f8f9fa; -fx-padding: 15; -fx-border-width: 0 0 0 1; -fx-border-color: #e9ecef; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, -5);" prefWidth="300">
+            <Label text="Your Order" styleClass="label-subheader" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+                <VBox fx:id="cartItemsContainer" spacing="10" style="-fx-padding: 10 0;">
+                    <Label fx:id="emptyCartLabel" text="Your cart is empty" styleClass="text-muted" alignment="CENTER"/>
+                </VBox>
+            </ScrollPane>
+
+            <Separator/>
+
+            <VBox spacing="5" style="-fx-padding: 10 0;">
+                <HBox spacing="10">
+                    <Label text="Subtotal:" HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="subtotalLabel" text=" "/>
+                </HBox>
+                <HBox spacing="10">
+                    <Label text="Delivery Fee:" HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="deliveryFeeLabel" text=" "/>
+                </HBox>
+                <Separator/>
+                <HBox spacing="10">
+                    <Label text="Total:" styleClass="label-bold" style="-fx-font-weight: bold;" HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="totalLabel" text=" " styleClass="label-bold" style="-fx-font-weight: bold;"/>
+                </HBox>
+            </VBox>
+
+            <Button fx:id="checkoutButton" text="Checkout" styleClass="primary-button" prefWidth="Infinity" onAction="#handleCheckout"
+                    style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10; -fx-background-radius: 5; -fx-cursor: hand;"
+                    disable="true">
+                <VBox.margin>
+                    <Insets top="15"/>
+                </VBox.margin>
+            </Button>
+        </VBox>
+    </right>
+
+    <!-- Status Bar -->
+    <bottom>
+        <HBox style="-fx-background-color: -light-gray; -fx-padding: 5 20;">
+            <Label text="© 2025 Wasly Food Ordering System" style="-fx-text-fill: -text-color;"/>
+        </HBox>
+    </bottom>
+</BorderPane>

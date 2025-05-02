@@ -402,6 +402,7 @@ public class CheckoutController implements Initializable {
 
             Location deliveryAddress = addressComboBox.getValue();
             String paymentMethod = cashRadioButton.isSelected() ? "Cash on Delivery" : "Credit Card";
+            String paymentStatus = "Pending"; // Now using payment status instead of order status
 
             // Convert List<Cart.CartItem> to Map<Product, Integer> as required by OrderDataAccess
             java.util.Map<com.example.foodorderingsystem.BusinessLayer.Product, Integer> itemsMap =
@@ -416,8 +417,8 @@ public class CheckoutController implements Initializable {
                     cart.getRestaurantId(),
                     deliveryAddress,
                     paymentMethod,
-                    "Pending",
-                    itemsMap, // Pass the converted map instead of cart.getCartItems()
+                    paymentStatus, // Using payment status
+                    itemsMap,
                     cart.calculateTotal().add(DELIVERY_FEE)
             );
 

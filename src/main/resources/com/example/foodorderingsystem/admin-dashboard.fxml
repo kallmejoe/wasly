@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane prefHeight="700.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.foodorderingsystem.PresentationLayer.AdminDashboardController"
+            stylesheets="@styles/main-styles.css">
+    <left>
+        <!-- Sidebar -->
+        <VBox styleClass="admin-sidebar" spacing="5" prefWidth="220">
+            <padding>
+                <Insets top="20" right="10" bottom="20" left="10" />
+            </padding>
+
+            <!-- App Logo/Title -->
+            <Label text="Wasly Admin" styleClass="admin-title">
+                <font>
+                    <Font name="System Bold" size="20.0" />
+                </font>
+                <padding>
+                    <Insets bottom="20" />
+                </padding>
+            </Label>
+
+            <!-- Navigation Buttons -->
+            <Button fx:id="btnRestaurants" styleClass="admin-nav-button" text="Restaurants" onAction="#handleRestaurants" maxWidth="Infinity" />
+            <Button fx:id="btnProducts" styleClass="admin-nav-button" text="Products" onAction="#handleProducts" maxWidth="Infinity" />
+            <Button fx:id="btnCategories" styleClass="admin-nav-button" text="Categories" onAction="#handleCategories" maxWidth="Infinity" />
+            <Button fx:id="btnCustomers" styleClass="admin-nav-button" text="Customers" onAction="#handleCustomers" maxWidth="Infinity" />
+            <Button fx:id="btnOrders" styleClass="admin-nav-button" text="Orders" onAction="#handleOrders" maxWidth="Infinity" />
+            <Button fx:id="btnDeliveries" styleClass="admin-nav-button" text="Deliveries" onAction="#handleDeliveries" maxWidth="Infinity" />
+            <Button fx:id="btnPayments" styleClass="admin-nav-button" text="Payments" onAction="#handlePayments" maxWidth="Infinity" />
+            <Button fx:id="btnAdmins" styleClass="admin-nav-button" text="Admin Users" onAction="#handleAdmins" maxWidth="Infinity" />
+            <Button fx:id="btnSystemLogs" styleClass="admin-nav-button" text="System Logs" onAction="#handleSystemLogs" maxWidth="Infinity" />
+
+            <Region VBox.vgrow="ALWAYS" />
+
+            <Button fx:id="btnLogout" styleClass="admin-logout-button" text="Logout" onAction="#handleLogout" maxWidth="Infinity" />
+        </VBox>
+    </left>
+
+    <center>
+        <!-- Main Content Area -->
+        <BorderPane fx:id="contentArea" styleClass="admin-content">
+            <top>
+                <!-- Page Title and Action Buttons -->
+                <HBox spacing="20" alignment="CENTER_LEFT">
+                    <padding>
+                        <Insets top="20" right="30" bottom="20" left="30" />
+                    </padding>
+
+                    <Label fx:id="contentTitle" text="Dashboard" styleClass="admin-content-title">
+                        <font>
+                            <Font name="System Bold" size="24.0" />
+                        </font>
+                    </Label>
+
+                    <Region HBox.hgrow="ALWAYS" />
+
+                    <HBox fx:id="actionButtons" spacing="10" alignment="CENTER_RIGHT" visible="false">
+                        <Button fx:id="btnRefresh" text="Refresh" onAction="#handleRefresh" styleClass="admin-action-button" />
+                        <Button fx:id="btnAdd" text="Add New" onAction="#handleAdd" styleClass="admin-action-button" />
+                    </HBox>
+                </HBox>
+            </top>
+
+            <center>
+                <!-- Tables for each entity, initially all invisible -->
+                <StackPane>
+                    <!-- Welcome Screen -->
+                    <VBox fx:id="welcomeScreen" spacing="20" alignment="CENTER">
+                        <Label text="Welcome to Wasly Admin Dashboard" styleClass="welcome-title">
+                            <font>
+                                <Font name="System Bold" size="28.0" />
+                            </font>
+                        </Label>
+                        <Label text="Select an option from the sidebar to get started" styleClass="welcome-subtitle">
+                            <font>
+                                <Font size="16.0" />
+                            </font>
+                        </Label>
+                    </VBox>
+
+                    <!-- Restaurants Table -->
+                    <TableView fx:id="restaurantsTable" visible="false" managed="false">
+                        <columns>
+                            <TableColumn fx:id="colRestaurantId" text="ID" prefWidth="60" />
+                            <TableColumn fx:id="colRestaurantName" text="Name" prefWidth="200" />
+                            <TableColumn fx:id="colRestaurantLocation" text="Location" prefWidth="200" />
+                            <TableColumn fx:id="colRestaurantPhone" text="Phone" prefWidth="150" />
+                            <TableColumn fx:id="colRestaurantActions" text="Actions" prefWidth="150" />
+                        </columns>
+                    </TableView>
+
+                    <!-- Products Table -->
+                    <TableView fx:id="productsTable" visible="false" managed="false">
+                        <columns>
+                            <TableColumn fx:id="colProductId" text="ID" prefWidth="60" />
+                            <TableColumn fx:id="colProductName" text="Name" prefWidth="200" />
+                            <TableColumn fx:id="colProductPrice" text="Price" prefWidth="100" />
+                            <TableColumn fx:id="colProductRestaurant" text="Restaurant" prefWidth="150" />
+                            <TableColumn fx:id="colProductCategory" text="Category" prefWidth="150" />
+                            <TableColumn fx:id="colProductActions" text="Actions" prefWidth="150" />
+                        </columns>
+                    </TableView>
+
+                    <!-- Categories Table -->
+                    <TableView fx:id="categoriesTable" visible="false" managed="false">
+                        <columns>
+                            <TableColumn fx:id="colCategoryId" text="ID" prefWidth="60" />
+                            <TableColumn fx:id="colCategoryName" text="Name" prefWidth="200" />
+                            <TableColumn fx:id="colCategoryDescription" text="Description" prefWidth="400" />
+                            <TableColumn fx:id="colCategoryActions" text="Actions" prefWidth="150" />
+                        </columns>
+                    </TableView>
+
+                    <!-- Customers Table -->
+                    <TableView fx:id="customersTable" visible="false" managed="false">
+                        <columns>
+                            <TableColumn fx:id="colCustomerId" text="ID" prefWidth="60" />
+                            <TableColumn fx:id="colCustomerName" text="Name" prefWidth="200" />
+                            <TableColumn fx:id="colCustomerEmail" text="Email" prefWidth="200" />
+                            <TableColumn fx:id="colCustomerPhone" text="Phone" prefWidth="120" />
+                            <TableColumn fx:id="colCustomerAddress" text="Address" prefWidth="200" />
+                            <TableColumn fx:id="colCustomerActions" text="Actions" prefWidth="150" />
+                        </columns>
+                    </TableView>
+
+                    <!-- Orders Table -->
+                    <TableView fx:id="ordersTable" visible="false" managed="false">
+                        <columns>
+                            <TableColumn fx:id="colOrderId" text="ID" prefWidth="60" />
+                            <TableColumn fx:id="colOrderCustomer" text="Customer" prefWidth="150" />
+                            <TableColumn fx:id="colOrderRestaurant" text="Restaurant" prefWidth="150" />
+                            <TableColumn fx:id="colOrderDate" text="Date" prefWidth="100" />
+                            <TableColumn fx:id="colOrderTotal" text="Total" prefWidth="100" />
+                            <TableColumn fx:id="colOrderStatus" text="Status" prefWidth="100" />
+                            <TableColumn fx:id="colOrderActions" text="Actions" prefWidth="150" />
+                        </columns>
+                    </TableView>
+
+                    <!-- Deliveries Table -->
+                    <TableView fx:id="deliveriesTable" visible="false" managed="false">
+                        <columns>
+                            <TableColumn fx:id="colDeliveryId" text="ID" prefWidth="60" />
+                            <TableColumn fx:id="colDeliveryOrderId" text="Order ID" prefWidth="100" />
+                            <TableColumn fx:id="colDeliveryStatus" text="Status" prefWidth="100" />
+                            <TableColumn fx:id="colDeliveryAddress" text="Address" prefWidth="350" />
+                            <TableColumn fx:id="colDeliveryDate" text="Date" prefWidth="100" />
+                            <TableColumn fx:id="colDeliveryActions" text="Actions" prefWidth="150" />
+                        </columns>
+                    </TableView>
+
+                    <!-- Payments Table -->
+                    <TableView fx:id="paymentsTable" visible="false" managed="false">
+                        <columns>
+                            <TableColumn fx:id="colPaymentId" text="ID" prefWidth="60" />
+                            <TableColumn fx:id="colPaymentOrderId" text="Order ID" prefWidth="100" />
+                            <TableColumn fx:id="colPaymentAmount" text="Amount" prefWidth="100" />
+                            <TableColumn fx:id="colPaymentMethod" text="Method" prefWidth="120" />
+                            <TableColumn fx:id="colPaymentDate" text="Date" prefWidth="100" />
+                            <TableColumn fx:id="colPaymentStatus" text="Status" prefWidth="120" />
+                            <TableColumn fx:id="colPaymentActions" text="Actions" prefWidth="150" />
+                        </columns>
+                    </TableView>
+
+                    <!-- Admins Table -->
+                    <TableView fx:id="adminsTable" visible="false" managed="false">
+                        <columns>
+                            <TableColumn fx:id="colAdminId" text="ID" prefWidth="60" />
+                            <TableColumn fx:id="colAdminUsername" text="Username" prefWidth="150" />
+                            <TableColumn fx:id="colAdminEmail" text="Email" prefWidth="200" />
+                            <TableColumn fx:id="colAdminRole" text="Role" prefWidth="120" />
+                            <TableColumn fx:id="colAdminLastLogin" text="Last Login" prefWidth="150" />
+                            <TableColumn fx:id="colAdminActions" text="Actions" prefWidth="150" />
+                        </columns>
+                    </TableView>
+                </StackPane>
+            </center>
+
+            <bottom>
+                <!-- Pagination and Status Bar -->
+                <VBox>
+                    <!-- Pagination -->
+                    <HBox alignment="CENTER" spacing="10" visible="false" managed="true">
+                        <Label fx:id="lblItemCount" text="Total Items: 0" />
+                        <Pagination fx:id="pagination" maxPageIndicatorCount="10" pageCount="1" />
+                    </HBox>
+
+                    <!-- Status Bar -->
+                    <HBox styleClass="admin-status-bar" alignment="CENTER_LEFT">
+                        <padding>
+                            <Insets top="10" right="20" bottom="10" left="20" />
+                        </padding>
+                        <Label fx:id="statusLabel" text="Ready" />
+                    </HBox>
+                </VBox>
+            </bottom>
+        </BorderPane>
+    </center>
+</BorderPane>

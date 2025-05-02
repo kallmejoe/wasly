@@ -6,6 +6,7 @@ import com.example.foodorderingsystem.BusinessLayer.Product;
 import com.example.foodorderingsystem.BusinessLayer.Restaurant;
 import com.example.foodorderingsystem.DataAccessLayer.CategoryDataAccess;
 import com.example.foodorderingsystem.DataAccessLayer.ProductDataAccess;
+import javafx.animation.FadeTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -20,6 +21,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -310,27 +312,97 @@ public class RestaurantController implements Initializable {
             }
         }
 
-        // Add product to cart
-        boolean added = cart.addProduct(product, quantity);
-        if (added) {
-            // Update cart display
-            updateCartDisplay();
+        // Check if product is from a different restaurant
+        if (!cart.isEmpty() && cart.getRestaurantId() != product.getRestaurantId()) {
+            // Show confirmation dialog for clearing cart
+            Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmDialog.setTitle("Different Restaurant");
+            confirmDialog.setHeaderText("Your cart contains items from another restaurant");
+            confirmDialog.setContentText("You can only order from one restaurant at a time. Would you like to clear your current cart and add this item instead?");
 
-            // Show success message
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Added to Cart");
-            alert.setHeaderText(null);
-            alert.setContentText(quantity + " x " + product.getName() + " added to your cart.");
-            alert.showAndWait();
+            // Create custom buttons
+            ButtonType clearAndAddButton = new ButtonType("Clear Cart & Add", ButtonBar.ButtonData.OK_DONE);
+            ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+            confirmDialog.getButtonTypes().setAll(clearAndAddButton, cancelButton);
+
+            // Apply some styling to the dialog
+            DialogPane dialogPane = confirmDialog.getDialogPane();
+            dialogPane.getStylesheets().add(getClass().getResource("/com/example/foodorderingsystem/styles/main-styles.css").toExternalForm());
+            dialogPane.getStyleClass().add("modern-dialog");
+
+            // Show dialog and wait for user response
+            confirmDialog.showAndWait().ifPresent(buttonType -> {
+                if (buttonType == clearAndAddButton) {
+                    // Clear the cart
+                    cart.clear();
+
+                    // Now add the new product
+                    cart.addProduct(product, quantity);
+
+                    // Update cart display
+                    updateCartDisplay();
+
+                    // Show success message
+                    showSuccessToast(quantity + " x " + product.getName() + " added to your cart");
+                }
+            });
         } else {
-            // Show error if product is from different restaurant
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Cart Error");
-            alert.setHeaderText(null);
-            alert.setContentText("You can only add items from a single restaurant to your cart. " +
-                    "Please empty your cart or finish your current order first.");
-            alert.showAndWait();
+            // Add product to cart (either cart is empty or from same restaurant)
+            boolean added = cart.addProduct(product, quantity);
+            if (added) {
+                // Update cart display
+                updateCartDisplay();
+
+                // Show success message
+                showSuccessToast(quantity + " x " + product.getName() + " added to your cart");
+            }
         }
+    }
+
+    /**
+     * Shows a success toast message that automatically disappears after a few seconds
+     * @param message The message to display
+     */
+    private void showSuccessToast(String message) {
+        // Create a stylish toast notification
+        VBox toast = new VBox();
+        toast.setStyle("-fx-background-color: #4CAF50; -fx-padding: 10 15; -fx-background-radius: 5; " +
+                     "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 3);");
+
+        Label messageLabel = new Label(message);
+        messageLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+        toast.getChildren().add(messageLabel);
+
+        // Add to scene but position outside initially
+        StackPane overlay = new StackPane(toast);
+        overlay.setAlignment(Pos.BOTTOM_CENTER);
+        overlay.setPadding(new Insets(0, 0, 30, 0));
+        overlay.setMouseTransparent(true);
+
+        // Get the main content from BorderPane
+        BorderPane rootPane = (BorderPane) categoriesTabPane.getScene().getRoot();
+
+        // Add overlay as top layer
+        rootPane.getChildren().add(overlay);
+        StackPane.setAlignment(overlay, Pos.BOTTOM_CENTER);
+
+        // Animation to slide in and fade out
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(300), toast);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+        fadeIn.setCycleCount(1);
+
+        FadeTransition fadeOut = new FadeTransition(Duration.millis(500), toast);
+        fadeOut.setFromValue(1);
+        fadeOut.setToValue(0);
+        fadeOut.setCycleCount(1);
+        fadeOut.setDelay(Duration.seconds(2));
+        fadeOut.setOnFinished(e -> rootPane.getChildren().remove(overlay));
+
+        // Play animations
+        fadeIn.play();
+        fadeIn.setOnFinished(e -> fadeOut.play());
     }
 
     private void updateCartDisplay() {

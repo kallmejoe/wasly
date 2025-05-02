@@ -1,14 +1,19 @@
 package com.example.foodorderingsystem.BusinessLayer;
 
+import java.time.LocalDateTime;
+
 public class Payment {
     private int paymentId;
     private String status;
     private String method;
     private int orderId;
     private int customerId;
+    private int deliveryId; // Added direct ID field
+    private int restaurantId; // Added direct ID field
     private Delivery delivery;
     private Restaurant restaurant;
     private double amount; // Added amount field
+    private LocalDateTime orderDate; // Added order date field
 
     // Default constructor for creating empty payment objects
     public Payment() {
@@ -20,6 +25,12 @@ public class Payment {
         this.method = method;
         this.delivery = delivery;
         this.restaurant = restaurant;
+        if (delivery != null) {
+            this.deliveryId = delivery.getDeliveryId();
+        }
+        if (restaurant != null) {
+            this.restaurantId = restaurant.getRestaurantId();
+        }
     }
 
     // New constructor with orderId and customerId
@@ -31,6 +42,12 @@ public class Payment {
         this.customerId = customerId;
         this.delivery = delivery;
         this.restaurant = restaurant;
+        if (delivery != null) {
+            this.deliveryId = delivery.getDeliveryId();
+        }
+        if (restaurant != null) {
+            this.restaurantId = restaurant.getRestaurantId();
+        }
     }
 
     // Constructor with amount
@@ -41,6 +58,12 @@ public class Payment {
         this.amount = amount;
         this.delivery = delivery;
         this.restaurant = restaurant;
+        if (delivery != null) {
+            this.deliveryId = delivery.getDeliveryId();
+        }
+        if (restaurant != null) {
+            this.restaurantId = restaurant.getRestaurantId();
+        }
     }
 
     // Getters and setters
@@ -94,12 +117,32 @@ public class Payment {
         this.customerId = customerId;
     }
 
+    // New direct getters and setters for deliveryId and restaurantId
+    public int getDeliveryId() {
+        return deliveryId;
+    }
+
+    public void setDeliveryId(int deliveryId) {
+        this.deliveryId = deliveryId;
+    }
+
+    public int getRestaurantId() {
+        return restaurantId;
+    }
+
+    public void setRestaurantId(int restaurantId) {
+        this.restaurantId = restaurantId;
+    }
+
     public Delivery getDelivery() {
         return delivery;
     }
 
     public void setDelivery(Delivery delivery) {
         this.delivery = delivery;
+        if (delivery != null) {
+            this.deliveryId = delivery.getDeliveryId();
+        }
     }
 
     public Restaurant getRestaurant() {
@@ -108,6 +151,9 @@ public class Payment {
 
     public void setRestaurant(Restaurant restaurant) {
         this.restaurant = restaurant;
+        if (restaurant != null) {
+            this.restaurantId = restaurant.getRestaurantId();
+        }
     }
 
     public double getAmount() {
@@ -116,5 +162,14 @@ public class Payment {
 
     public void setAmount(double amount) {
         this.amount = amount;
+    }
+
+    // Order date getter and setter
+    public LocalDateTime getOrderDate() {
+        return orderDate;
+    }
+
+    public void setOrderDate(LocalDateTime orderDate) {
+        this.orderDate = orderDate;
     }
 }

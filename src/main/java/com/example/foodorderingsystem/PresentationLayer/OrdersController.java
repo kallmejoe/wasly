@@ -120,10 +120,7 @@ public class OrdersController implements Initializable {
             new SimpleStringProperty(String.format("$%.2f", data.getValue().getTotalAmount())));
 
         // Status column
-        statusColumn.setCellValueFactory(data -> {
-            String status = data.getValue().getStatus();
-            return new SimpleStringProperty(status);
-        });
+
 
         // Status column styling
         statusColumn.setCellFactory(column -> {
@@ -284,7 +281,7 @@ public class OrdersController implements Initializable {
                       "Order Details",
                       "Order #" + order.getOrderId(),
                       "Restaurant: " + order.getRestaurant().getName() + "\n" +
-                      "Status: " + order.getStatus() + "\n" +
+
                       "Total: $" + String.format("%.2f", order.getTotalAmount()) + "\n" +
                       "Date: " + new SimpleDateFormat("MMM d, yyyy h:mm a").format(order.getOrderDate()));
         } catch (Exception e) {
