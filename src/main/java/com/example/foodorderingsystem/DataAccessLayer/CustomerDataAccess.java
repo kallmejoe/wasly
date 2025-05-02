@@ -363,4 +363,10 @@ public class CustomerDataAccess {
             return false;
         }
     }
+
+    // Add createCustomer method to fix the error
+    public Customer createCustomer(Customer customer) throws SQLException {
+        insertCustomer(customer);
+        return customer;
+    }
 }

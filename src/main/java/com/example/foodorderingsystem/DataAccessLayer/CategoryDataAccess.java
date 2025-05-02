@@ -56,6 +56,11 @@ public class CategoryDataAccess {
         createCategory(category);
     }
 
+    // Add addCategory method to fix the error
+    public void addCategory(Category category) throws SQLException {
+        createCategory(category);
+    }
+
     // READ operation using GetAllCategories stored procedure
     public List<Category> getAllCategories() throws SQLException {
         String callProc = "{call GetAllCategories}";

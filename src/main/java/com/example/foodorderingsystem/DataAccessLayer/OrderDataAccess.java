@@ -385,6 +385,44 @@ public class OrderDataAccess {
         return filteredOrders;
     }
 
+    /**
+     * Gets all orders in the system, used mainly by administrative interfaces
+     * @return List of all orders
+     * @throws SQLException if a database error occurs
+     */
+    public List<Order> getAllOrders() throws SQLException {
+        // Using GetAllOrders stored procedure
+        String callGetAllOrders = "{call GetAllOrders}";
+        List<Order> orders = new ArrayList<>();
+
+        try (CallableStatement stmt = connection.prepareCall(callGetAllOrders);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                int orderId = rs.getInt("Order_ID");
+                int customerId = rs.getInt("Customer_ID");
+                LocalDateTime orderDate = rs.getTimestamp("Order_Date").toLocalDateTime();
+                int restaurantId = rs.getInt("Restaurant_ID");
+                int deliveryId = rs.getInt("Delivery_ID");
+                int paymentId = rs.getInt("Payment_ID");
+
+                // Load related entities
+                Customer customer = customerDataAccess.getCustomerById(customerId);
+                Restaurant restaurant = restaurantDataAccess.getRestaurant(restaurantId);
+                Delivery delivery = deliveryDataAccess.getDeliveryById(deliveryId);
+                Payment payment = paymentDataAccess.getPaymentById(paymentId);
+
+                Order order = new Order(orderId, orderDate, customer, restaurant, delivery, payment);
+                orders.add(order);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting all orders: " + e.getMessage());
+            throw e;
+        }
+
+        return orders;
+    }
+
     public void closeConnection() {
         try {
             if (connection != null && !connection.isClosed()) {

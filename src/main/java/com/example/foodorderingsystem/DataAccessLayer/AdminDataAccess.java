@@ -307,4 +307,9 @@ public class AdminDataAccess {
             stmt.execute();
         }
     }
+
+    // Add addAdmin method to fix the error
+    public void addAdmin(Admin admin) throws SQLException {
+        insertAdmin(admin);
+    }
 }

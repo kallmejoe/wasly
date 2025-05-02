@@ -107,6 +107,14 @@ public class Product {
         this.unitPrice = unitPrice;
     }
 
+    public double getPrice() {
+        return unitPrice != null ? unitPrice.doubleValue() : 0.0;
+    }
+
+    public void setPrice(double price) {
+        this.unitPrice = BigDecimal.valueOf(price);
+    }
+
     public int getAmountInStock() {
         return amountInStock;
     }

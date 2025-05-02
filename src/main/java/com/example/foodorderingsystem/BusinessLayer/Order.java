@@ -11,12 +11,12 @@ public class Order {
     private Delivery delivery;
     private Payment payment;
     private double totalAmount;
-    // Removed status field
+    private String status; // Added status field
 
     // No-argument constructor
     public Order() {
         this.orderDate = LocalDateTime.now();
-        // Removed status initialization
+        this.status = "Pending"; // Default status
     }
 
     public Order(int orderId, LocalDateTime orderDate, Customer customer,
@@ -27,10 +27,9 @@ public class Order {
         this.restaurant = restaurant;
         this.delivery = delivery;
         this.payment = payment;
-        // Removed status initialization
         this.totalAmount = payment != null ? payment.getAmount() : 0.0;
+        this.status = "Pending"; // Default status
     }
-
 
     public Order(int orderId, LocalDateTime now, Customer customer, Restaurant restaurant, Payment payment) {
         this.orderId = orderId;
@@ -39,8 +38,8 @@ public class Order {
         this.restaurant = restaurant;
         this.delivery = null; // Delivery is not set in this constructor
         this.payment = payment;
-        // Removed status initialization
         this.totalAmount = payment != null ? payment.getAmount() : 0.0;
+        this.status = "Pending"; // Default status
     }
 
     // Constructor for use with checkout
@@ -48,8 +47,8 @@ public class Order {
                 String paymentMethod,
                 java.util.Map<Product, Integer> items, BigDecimal totalAmount) {
         this.orderDate = LocalDateTime.now();
-        // Removed status parameter and initialization
         this.totalAmount = totalAmount.doubleValue();
+        this.status = "Pending"; // Default status
         // Note: Customer, Restaurant, Delivery and Payment objects will be populated later
         // by the OrderDataAccess class
     }
@@ -111,5 +110,31 @@ public class Order {
         this.totalAmount = totalAmount;
     }
 
-    // Removed getStatus and setStatus methods
+    // Additional getters to support direct access to related entity IDs
+    public int getCustomerId() {
+        return customer != null ? customer.getCustomerId() : 0;
+    }
+
+    public int getRestaurantId() {
+        return restaurant != null ? restaurant.getRestaurantId() : 0;
+    }
+
+    // Alias for getOrderDate to support getOrderTime calls
+    public LocalDateTime getOrderTime() {
+        return orderDate;
+    }
+
+    // Added methods for status
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    // For compatibility with code expecting getOrder()
+    public Order getOrder() {
+        return this;
+    }
 }

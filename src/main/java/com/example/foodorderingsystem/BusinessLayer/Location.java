@@ -7,6 +7,9 @@ public class Location {
     private String streetNumber;
     private String state;
     private String zipCode;
+    private String description;
+    private double latitude;
+    private double longitude;
 
     // No-argument constructor
     public Location() {
@@ -65,6 +68,30 @@ public class Location {
 
     public void setZipCode(String zipCode) {
         this.zipCode = zipCode;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
     // Method to get the full address as a string
