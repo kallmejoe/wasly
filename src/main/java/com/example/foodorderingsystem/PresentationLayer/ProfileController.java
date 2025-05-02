@@ -643,7 +643,7 @@ public class ProfileController implements Initializable {
     @FXML
     protected void handleCartButton(ActionEvent event) {
         try {
-            Parent cartView = FXMLLoader.load(getClass().getResource("/com/example/foodorderingsystem/cart-view.fxml"));
+            Parent cartView = FXMLLoader.load(getClass().getResource("/com/example/foodorderingsystem/cartView.fxml"));
             Scene cartScene = new Scene(cartView);
             Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             currentStage.setScene(cartScene);

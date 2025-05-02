@@ -9,6 +9,8 @@ public class Order {
     private Restaurant restaurant;
     private Delivery delivery;
     private Payment payment;
+    private double totalAmount;
+    private String status;
 
     public Order(int orderId, LocalDateTime orderDate, Customer customer,
                  Restaurant restaurant, Delivery delivery, Payment payment) {
@@ -18,6 +20,19 @@ public class Order {
         this.restaurant = restaurant;
         this.delivery = delivery;
         this.payment = payment;
+        this.status = "Pending"; // Default status
+        this.totalAmount = payment != null ? payment.getAmount() : 0.0;
+    }
+
+    public Order(int orderId, LocalDateTime now, Customer customer, Restaurant restaurant, Payment payment) {
+        this.orderId = orderId;
+        this.orderDate = now;
+        this.customer = customer;
+        this.restaurant = restaurant;
+        this.delivery = null; // Delivery is not set in this constructor
+        this.payment = payment;
+        this.status = "Pending"; // Default status
+        this.totalAmount = payment != null ? payment.getAmount() : 0.0;
     }
 
     // Getters and setters
@@ -67,5 +82,21 @@ public class Order {
 
     public void setPayment(Payment payment) {
         this.payment = payment;
+    }
+
+    public double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

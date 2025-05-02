@@ -9,4 +9,7 @@ module com.example.foodorderingsystem {
 
     opens com.example.foodorderingsystem to javafx.fxml;
     exports com.example.foodorderingsystem;
+
+    opens com.example.foodorderingsystem.PresentationLayer to javafx.fxml;
+    exports com.example.foodorderingsystem.PresentationLayer;
 }

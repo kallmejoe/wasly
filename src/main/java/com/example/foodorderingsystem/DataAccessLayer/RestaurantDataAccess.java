@@ -92,7 +92,7 @@ public class RestaurantDataAccess {
 
     public Restaurant getRestaurant(int restaurantId) throws SQLException {
         // First get the restaurant basic info
-        String callGetAllRestaurants = "{call GetAllRestaurants}";
+        String callGetAllRestaurants = "{call GetAllRestaurants()}";
         Restaurant restaurant = null;
 
         try (CallableStatement stmt = connection.prepareCall(callGetAllRestaurants);
@@ -121,8 +121,8 @@ public class RestaurantDataAccess {
     }
 
     private List<String> getRestaurantPhones(int restaurantId) throws SQLException {
-        // Using GetRestaurantPhones stored procedure
-        String callGetPhones = "{call GetRestaurantPhones(?)}";
+        // Using GetRestaurantPhoneNumbers stored procedure
+        String callGetPhones = "{call GetRestaurantPhoneNumbers(?)}";
         List<String> phoneNumbers = new ArrayList<>();
 
         try (CallableStatement stmt = connection.prepareCall(callGetPhones)) {
@@ -140,7 +140,7 @@ public class RestaurantDataAccess {
 
     private List<Location> getRestaurantLocations(int restaurantId) throws SQLException {
         // Using GetRestaurantLocation stored procedure
-        String callGetLocation = "{call GetRestaurantLocation(?)}";
+        String callGetLocation = "{call GetRestaurantLocations(?)}";
         List<Location> locations = new ArrayList<>();
 
         try (CallableStatement stmt = connection.prepareCall(callGetLocation)) {
@@ -161,7 +161,7 @@ public class RestaurantDataAccess {
 
     public List<Restaurant> getAllRestaurants() throws SQLException {
         // Using GetAllRestaurants stored procedure
-        String callGetAllRestaurants = "{call GetAllRestaurants}";
+        String callGetAllRestaurants = "{call GetallRestaurants}";
         List<Restaurant> restaurants = new ArrayList<>();
 
         try (CallableStatement stmt = connection.prepareCall(callGetAllRestaurants);

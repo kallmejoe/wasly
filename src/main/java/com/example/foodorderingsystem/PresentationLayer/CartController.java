@@ -55,6 +55,8 @@ public class CartController implements Initializable {
     @FXML
     private Label cartItemsCountLabel;
     @FXML
+    private Label cartItemCount; // For navbar indicator
+    @FXML
     private Label emptyCartLabel;
     @FXML
     private Button clearCartButton;
@@ -62,6 +64,20 @@ public class CartController implements Initializable {
     private Button continueShoppingButton;
     @FXML
     private Button checkoutButton;
+
+    // Navigation buttons
+    @FXML
+    private Button homeButton;
+    @FXML
+    private Button restaurantsButton;
+    @FXML
+    private Button ordersButton;
+    @FXML
+    private Button cartButton;
+    @FXML
+    private Button profileButton;
+    @FXML
+    private Button logoutButton;
 
     // Services and data access
     private Cart cart;
@@ -85,6 +101,64 @@ public class CartController implements Initializable {
 
         // Update cart summary (subtotal, total, etc.)
         updateCartSummary();
+
+        // Update cart count in the navbar
+        updateCartCountInNavbar();
+    }
+
+    private void updateCartCountInNavbar() {
+        if (cartItemCount != null) {
+            cartItemCount.setText(String.valueOf(cart.getItemCount()));
+        }
+    }
+
+    // Navigation methods
+    @FXML
+    private void handleHomeButton(ActionEvent event) {
+        navigateTo("dashboard-view.fxml");
+    }
+
+    @FXML
+    private void handleRestaurantsButton(ActionEvent event) {
+        navigateTo("restaurant-view.fxml");
+    }
+
+    @FXML
+    private void handleOrdersButton(ActionEvent event) {
+        navigateTo("orders-view.fxml");
+    }
+
+    @FXML
+    private void handleCartButton(ActionEvent event) {
+        // We're already in the cart view, no need to navigate
+    }
+
+    @FXML
+    private void handleProfileButton(ActionEvent event) {
+        navigateTo("profile-view.fxml");
+    }
+
+    @FXML
+    private void handleLogoutButton(ActionEvent event) {
+        // Logout the user and navigate to login screen
+        SessionManager.getInstance().logout();
+        navigateTo("login-view.fxml");
+    }
+
+    private void navigateTo(String fxmlFile) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/foodorderingsystem/" + fxmlFile));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) homeButton.getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Navigation Error",
+                    "Could not navigate to the requested page.", e.getMessage());
+        }
     }
 
     private void setupTableColumns() {
@@ -204,6 +278,9 @@ public class CartController implements Initializable {
         // Update cart items count
         int itemCount = cart.getItemCount();
         cartItemsCountLabel.setText(itemCount + (itemCount == 1 ? " item" : " items") + " in your cart");
+
+        // Update cart count in navbar too
+        updateCartCountInNavbar();
     }
 
     private void updateCartSummary() {
@@ -235,24 +312,15 @@ public class CartController implements Initializable {
             loadCartItems();
             updateCartSummary();
         }
+
+        // After clearing cart, update the navbar count too
+        updateCartCountInNavbar();
     }
 
     @FXML
     private void onContinueShoppingClicked(ActionEvent event) {
-        try {
-            // Navigate back to restaurant or dashboard view
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/foodorderingsystem/dashboard-view.fxml"));
-            Parent root = loader.load();
-
-            Stage stage = (Stage) continueShoppingButton.getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Navigation Error",
-                    "Could not navigate to the shopping page.", e.getMessage());
-        }
+        // Use our navigation method instead of duplicating code
+        navigateTo("dashboard-view.fxml");
     }
 
     @FXML
@@ -263,20 +331,8 @@ public class CartController implements Initializable {
             return;
         }
 
-        try {
-            // Navigate to checkout view
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/foodorderingsystem/checkout-view.fxml"));
-            Parent root = loader.load();
-
-            Stage stage = (Stage) checkoutButton.getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Navigation Error",
-                    "Could not navigate to the checkout page.", e.getMessage());
-        }
+        // Use our navigation method
+        navigateTo("checkout-view.fxml");
     }
 
     private void showAlert(Alert.AlertType alertType, String title, String header, String content) {
