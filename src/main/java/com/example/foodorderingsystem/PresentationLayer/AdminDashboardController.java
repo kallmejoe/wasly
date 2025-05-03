@@ -636,19 +636,14 @@ public class AdminDashboardController implements Initializable {
             ProductDialogController controller = loader.getController();
             controller.setProduct(product);
 
-            Dialog<ButtonType> dialog = new Dialog<>();
+            Dialog<Product> dialog = new Dialog<>();
             dialog.setDialogPane(dialogPane);
             dialog.setTitle(product.getProductId() == 0 ? "Add Product" : "Edit Product");
             dialog.initModality(Modality.WINDOW_MODAL);
             dialog.initOwner(contentArea.getScene().getWindow());
 
-            // Set result converter to handle OK button action
-            dialog.setResultConverter(buttonType -> {
-                if (buttonType == ButtonType.OK) {
-                    controller.handleOk();
-                }
-                return buttonType;
-            });
+            // Connect the controller with the dialog
+            controller.setDialog(dialog);
 
             dialog.showAndWait();
 

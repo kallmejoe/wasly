@@ -15,14 +15,16 @@ public class Payment {
     private double amount; // Added amount field
     private LocalDateTime orderDate; // Added order date field
     private LocalDateTime paymentDate; // Added payment date field
+    private static int paymentCounter = 0; // Static counter for unique payment IDs
 
     // Default constructor for creating empty payment objects
     public Payment() {
+        this.paymentId = ++paymentCounter;
         this.paymentDate = LocalDateTime.now(); // Default to current date/time
     }
 
     public Payment(int paymentId, String status, String method, Delivery delivery, Restaurant restaurant) {
-        this.paymentId = paymentId;
+        this.paymentId = ++paymentCounter;
         this.status = status;
         this.method = method;
         this.delivery = delivery;
@@ -38,7 +40,7 @@ public class Payment {
 
     // New constructor with orderId and customerId
     public Payment(int paymentId, String status, String method, int orderId, int customerId, Delivery delivery, Restaurant restaurant) {
-        this.paymentId = paymentId;
+        this.paymentId = ++paymentCounter;
         this.status = status;
         this.method = method;
         this.orderId = orderId;
@@ -56,7 +58,7 @@ public class Payment {
 
     // Constructor with amount
     public Payment(int paymentId, String status, String method, double amount, Delivery delivery, Restaurant restaurant) {
-        this.paymentId = paymentId;
+        this.paymentId = ++paymentCounter;
         this.status = status;
         this.method = method;
         this.amount = amount;
