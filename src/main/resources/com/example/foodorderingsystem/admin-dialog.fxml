@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<DialogPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.foodorderingsystem.PresentationLayer.AdminDialogController"
+            prefWidth="500" prefHeight="600">
+    <headerText>Admin User Details</headerText>
+
+    <content>
+        <GridPane hgap="15" vgap="15">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+
+            <columnConstraints>
+                <ColumnConstraints hgrow="NEVER" minWidth="120" prefWidth="140"/>
+                <ColumnConstraints hgrow="ALWAYS" minWidth="200" prefWidth="300"/>
+            </columnConstraints>
+
+            <!-- Admin ID (hidden for new admins) -->
+            <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <Label fx:id="lblAdminId" text="New" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+            <!-- First Name -->
+            <Label text="First Name: *" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtFirstName" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+            <!-- Last Name -->
+            <Label text="Last Name: *" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtLastName" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+            <!-- Email -->
+            <Label text="Email: *" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtEmail" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+            <!-- Password -->
+            <Label text="Password: *" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <PasswordField fx:id="txtPassword" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+            <Label text="(Leave empty to keep current password for existing users)"
+                   GridPane.rowIndex="5" GridPane.columnIndex="1"
+                   style="-fx-font-size: 11px; -fx-text-fill: #666666;"/>
+
+            <!-- Phone Number -->
+            <Label text="Phone:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtPhone" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+            <!-- Salary -->
+            <Label text="Salary:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtSalary" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+
+            <!-- Role -->
+            <Label text="Role:" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="cmbRole" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+
+            <!-- Restaurants Section -->
+            <Label text="Restaurants:" GridPane.rowIndex="9" GridPane.columnIndex="0" GridPane.valignment="TOP">
+                <padding>
+                    <Insets top="8"/>
+                </padding>
+            </Label>
+
+            <VBox spacing="10" GridPane.rowIndex="9" GridPane.columnIndex="1">
+                <!-- Available Restaurants -->
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <ComboBox fx:id="cmbRestaurant" prefWidth="200"/>
+                    <Button fx:id="btnAddRestaurant" text="Add" minWidth="80"/>
+                </HBox>
+
+                <!-- Assigned Restaurants -->
+                <VBox spacing="5">
+                    <Label text="Managed Restaurants:" style="-fx-font-weight: bold;"/>
+                    <ListView fx:id="lstAssignedRestaurants" prefHeight="120"/>
+                    <Button fx:id="btnRemoveRestaurant" text="Remove Selected" alignment="CENTER_RIGHT"/>
+                </VBox>
+            </VBox>
+
+            <!-- Status message for validation errors -->
+            <Label text="* Required fields" GridPane.rowIndex="10" GridPane.columnIndex="0"
+                   style="-fx-font-style: italic; -fx-text-fill: #666666;"/>
+            <Label fx:id="lblStatus" text="" GridPane.rowIndex="10" GridPane.columnIndex="1"
+                   style="-fx-text-fill: red;" wrapText="true"/>
+        </GridPane>
+    </content>
+
+    <buttonTypes>
+        <ButtonType fx:id="btnOk" fx:constant="OK" />
+        <ButtonType fx:id="btnCancel" fx:constant="CANCEL" />
+    </buttonTypes>
+
+    <ButtonBar.buttonData>
+        <fx:reference source="btnOk" />
+    </ButtonBar.buttonData>
+</DialogPane>

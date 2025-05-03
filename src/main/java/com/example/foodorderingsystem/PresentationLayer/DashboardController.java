@@ -76,7 +76,7 @@ public class DashboardController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // Set user name in welcome message
-        Account currentUser = SessionManager.getInstance().getCurrentUser();
+        Account currentUser = (Account) SessionManager.getInstance().getCurrentUser();
         if (currentUser != null) {
             userNameLabel.setText(currentUser.getFirstName() + " " + currentUser.getLastName());
         }

@@ -6,6 +6,17 @@ public abstract class Account {
     private String firstName;
     private String middleName;
     private String lastName;
+    private String role; // Added role field for user type
+
+    // Add a no-argument constructor
+    public Account() {
+        this.email = "";
+        this.password = "";
+        this.firstName = "";
+        this.middleName = "";
+        this.lastName = "";
+        this.role = "";
+    }
 
     public Account(String email, String password, String firstName, String middleName, String lastName) {
         this.email = email;
@@ -55,4 +66,28 @@ public abstract class Account {
         this.lastName = lastName;
     }
 
+    // Added role methods
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    // Get full name utility method
+    public String getName() {
+        StringBuilder fullName = new StringBuilder();
+        fullName.append(firstName);
+
+        if (middleName != null && !middleName.isEmpty()) {
+            fullName.append(" ").append(middleName);
+        }
+
+        if (lastName != null && !lastName.isEmpty()) {
+            fullName.append(" ").append(lastName);
+        }
+
+        return fullName.toString();
+    }
 }

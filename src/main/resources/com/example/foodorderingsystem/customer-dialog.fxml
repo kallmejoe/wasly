@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<DialogPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.foodorderingsystem.PresentationLayer.CustomerDialogController"
+            prefWidth="450" prefHeight="450">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <headerText>Customer Details</headerText>
+
+    <content>
+        <GridPane hgap="10" vgap="10">
+            <columnConstraints>
+                <ColumnConstraints hgrow="NEVER" minWidth="100" prefWidth="120"/>
+                <ColumnConstraints hgrow="ALWAYS" minWidth="200" prefWidth="250"/>
+            </columnConstraints>
+
+            <!-- Customer ID (hidden for new customers) -->
+            <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <Label fx:id="lblCustomerId" text="New" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+            <!-- First Name -->
+            <Label text="First Name:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtFirstName" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+            <!-- Last Name -->
+            <Label text="Last Name:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtLastName" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+            <!-- Email -->
+            <Label text="Email:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtEmail" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+            <!-- Password -->
+            <Label text="Password:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <PasswordField fx:id="txtPassword" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+            <!-- Phone -->
+            <Label text="Phone:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtPhone" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+            <!-- Location -->
+            <Label text="City:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtCity" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+            <Label text="Street:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtStreet" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+
+            <Label text="Street Number:" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtStreetNumber" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+
+            <Label text="Status:" GridPane.rowIndex="9" GridPane.columnIndex="0" GridPane.valignment="TOP">
+                <padding>
+                    <Insets top="5"/>
+                </padding>
+            </Label>
+            <Label fx:id="lblStatus" text="" GridPane.rowIndex="9" GridPane.columnIndex="1" wrapText="true"/>
+        </GridPane>
+    </content>
+
+    <buttonTypes>
+        <ButtonType fx:constant="OK"/>
+        <ButtonType fx:constant="CANCEL"/>
+    </buttonTypes>
+</DialogPane>

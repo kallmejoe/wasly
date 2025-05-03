@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.foodorderingsystem.PresentationLayer.CartController"
+            prefHeight="600.0" prefWidth="900.0"
+            style="-fx-background-color: #f8f9fa;">
+
+    <!-- Top Navigation Bar -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: #ff5722; -fx-padding: 12px 20px;">
+            <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                <Label text="Wasly" style="-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+            </HBox>
+
+            <HBox alignment="CENTER" spacing="15.0">
+                <Button fx:id="homeButton" text="Home"
+                        style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-weight: bold;"
+                        onAction="#handleHomeButton"/>
+                <Button fx:id="restaurantsButton" text="Restaurants"
+                        style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-weight: bold;"
+                        onAction="#handleRestaurantsButton"/>
+                <Button fx:id="ordersButton" text="My Orders"
+                        style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-weight: bold;"
+                        onAction="#handleOrdersButton"/>
+            </HBox>
+
+            <HBox alignment="CENTER_RIGHT" spacing="15.0" HBox.hgrow="ALWAYS">
+                <Button fx:id="cartButton"
+                        style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20;"
+                        onAction="#handleCartButton">
+                    <graphic>
+                        <HBox spacing="8" alignment="CENTER">
+                            <Label text="Cart" style="-fx-text-fill: white;"/>
+                            <Label fx:id="cartItemCount" text="0"
+                                   style="-fx-text-fill: white; -fx-background-color: rgba(255,255,255,0.3); -fx-padding: 2 8; -fx-background-radius: 10;"/>
+                        </HBox>
+                    </graphic>
+                    <padding>
+                        <Insets left="12" right="12" top="6" bottom="6"/>
+                    </padding>
+                </Button>
+                <Button fx:id="profileButton" text="Profile"
+                        style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-weight: bold;"
+                        onAction="#handleProfileButton"/>
+                <Button fx:id="logoutButton" text="Logout"
+                        style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-weight: bold;"
+                        onAction="#handleLogoutButton"/>
+            </HBox>
+        </HBox>
+    </top>
+
+    <!-- Main Content Area -->
+    <center>
+        <VBox spacing="20" style="-fx-padding: 25px;">
+            <Label text="Your Cart" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333333;"/>
+
+            <!-- Empty Cart State -->
+            <VBox fx:id="emptyCartContainer" alignment="CENTER" spacing="25" visible="false" style="-fx-padding: 50px 0;">
+                <Label text="Your cart is empty" style="-fx-font-size: 20px; -fx-text-fill: #777777;"/>
+                <Button text="Browse Restaurants"
+                        style="-fx-background-color: #4caf50; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 25; -fx-background-radius: 5;"
+                        onAction="#handleRestaurantsButton"/>
+            </VBox>
+
+            <!-- Cart Content -->
+            <VBox fx:id="cartContentContainer" spacing="20">
+                <!-- Restaurant Info -->
+                <HBox fx:id="restaurantInfoContainer" spacing="10"
+                      style="-fx-padding: 15px; -fx-background-color: white; -fx-background-radius: 8px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 8, 0, 0, 4);">
+                    <Label text="Restaurant: " style="-fx-font-weight: bold; -fx-text-fill: #333333;"/>
+                    <Label fx:id="restaurantNameLabel" text="Restaurant Name" style="-fx-text-fill: #333333;"/>
+                </HBox>
+
+                <!-- Cart Items Table -->
+                <TableView fx:id="cartItemsTable" VBox.vgrow="ALWAYS"
+                           style="-fx-background-color: white; -fx-background-radius: 8px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 8, 0, 0, 4);">
+                    <columns>
+                        <TableColumn fx:id="productNameColumn" text="Product" prefWidth="350"/>
+                        <TableColumn fx:id="productPriceColumn" text="Unit Price" prefWidth="120"/>
+                        <TableColumn fx:id="quantityColumn" text="Quantity" prefWidth="100"/>
+                        <TableColumn fx:id="totalColumn" text="Total" prefWidth="120"/>
+                        <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="150"/>
+                    </columns>
+                    <placeholder>
+                        <Label text="No items in cart" style="-fx-text-fill: #777777;"/>
+                    </placeholder>
+                </TableView>
+            </VBox>
+        </VBox>
+    </center>
+
+    <!-- Right Sidebar - Order Summary -->
+    <right>
+        <VBox fx:id="orderSummaryContainer"
+              style="-fx-background-color: white; -fx-padding: 25px; -fx-border-color: #eeeeee; -fx-border-width: 0 0 0 1;"
+              prefWidth="320" spacing="20">
+            <Label text="Order Summary" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #333333;"/>
+
+            <Separator style="-fx-background-color: #eeeeee;"/>
+
+            <GridPane hgap="15" vgap="10">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="SOMETIMES"/>
+                    <ColumnConstraints hgrow="SOMETIMES" halignment="RIGHT"/>
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="30"/>
+                    <RowConstraints minHeight="30"/>
+                    <RowConstraints minHeight="30"/>
+                </rowConstraints>
+
+                <Label text="Subtotal:" style="-fx-text-fill: #666666;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <Label fx:id="subtotalLabel" text="$0.00" style="-fx-text-fill: #666666;" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                <Label text="Delivery Fee:" style="-fx-text-fill: #666666;" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <Label fx:id="deliveryFeeLabel" text="$0.00" style="-fx-text-fill: #666666;" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                <Label text="Total:" style="-fx-font-weight: bold; -fx-text-fill: #333333; -fx-font-size: 16px;"
+                       GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <Label fx:id="totalLabel" text="$0.00" style="-fx-font-weight: bold; -fx-text-fill: #333333; -fx-font-size: 16px;"
+                       GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+            </GridPane>
+
+            <Separator style="-fx-background-color: #eeeeee;"/>
+
+            <Button fx:id="continueShoppingButton" text="Continue Shopping"
+                    style="-fx-background-color: #f5f5f5; -fx-text-fill: #333333; -fx-background-radius: 5; -fx-padding: 12 10;"
+                    onAction="#handleContinueShopping" prefWidth="Infinity"/>
+
+            <Button fx:id="checkoutButton" text="Proceed to Checkout"
+                    style="-fx-background-color: #4caf50; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-padding: 12 10;"
+                    prefWidth="Infinity" onAction="#handleCheckout"/>
+
+            <Button fx:id="clearCartButton" text="Clear Cart"
+                    style="-fx-background-color: transparent; -fx-border-color: #dddddd; -fx-text-fill: #f44336; -fx-border-radius: 5; -fx-padding: 12 10;"
+                    prefWidth="Infinity" onAction="#handleClearCart"/>
+        </VBox>
+    </right>
+
+    <!-- Status Bar -->
+    <bottom>
+        <HBox style="-fx-background-color: #eeeeee; -fx-padding: 10 20;">
+            <Label text="© 2025 Wasly Food Ordering System" style="-fx-text-fill: #666666;"/>
+        </HBox>
+    </bottom>
+</BorderPane>

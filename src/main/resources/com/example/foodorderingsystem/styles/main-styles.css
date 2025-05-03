@@ -438,3 +438,95 @@
 .danger-button:hover {
     -fx-background-color: #d32f2f;
 }
+
+/* Card layout for admin dashboard */
+.card-scroll-pane {
+    -fx-background-color: #f5f5f5;
+    -fx-border-color: transparent;
+}
+
+.card-scroll-pane > .viewport {
+    -fx-background-color: #f5f5f5;
+}
+
+.card-container {
+    -fx-background-color: #f5f5f5;
+}
+
+.admin-card {
+    -fx-background-color: white;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 8, 0, 0, 2);
+    -fx-min-width: 300px;
+    -fx-max-width: 300px;
+    -fx-min-height: 180px;
+    -fx-max-height: 250px;
+    -fx-padding: 15px;
+}
+
+.admin-card:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 12, 0, 0, 4);
+}
+
+.card-header {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 10px 0;
+}
+
+.card-id {
+    -fx-font-size: 12px;
+    -fx-text-fill: #757575;
+}
+
+.card-content {
+    -fx-font-size: 14px;
+    -fx-spacing: 8px;
+}
+
+.card-info-label {
+    -fx-font-weight: bold;
+    -fx-min-width: 80px;
+}
+
+.card-info-value {
+    -fx-wrap-text: true;
+}
+
+.card-action-buttons {
+    -fx-spacing: 10px;
+    -fx-padding: 10px 0 0 0;
+}
+
+.card-edit-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-min-width: 70px;
+}
+
+.card-edit-button:hover {
+    -fx-background-color: #2980b9;
+}
+
+.card-delete-button {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-min-width: 70px;
+}
+
+.card-delete-button:hover {
+    -fx-background-color: #c0392b;
+}
+
+.card-view-button {
+    -fx-background-color: #2ecc71;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-min-width: 70px;
+}
+
+.card-view-button:hover {
+    -fx-background-color: #27ae60;
+}

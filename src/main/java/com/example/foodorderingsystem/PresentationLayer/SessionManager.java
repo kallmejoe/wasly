@@ -1,5 +1,6 @@
 package com.example.foodorderingsystem.PresentationLayer;
 
+import com.example.foodorderingsystem.BusinessLayer.Admin;
 import com.example.foodorderingsystem.BusinessLayer.Cart;
 import com.example.foodorderingsystem.BusinessLayer.Customer;
 import com.example.foodorderingsystem.BusinessLayer.Order;
@@ -10,13 +11,23 @@ import com.example.foodorderingsystem.BusinessLayer.Restaurant;
  */
 public class SessionManager {
     private static SessionManager instance;
-    private int currentCustomerId = 1; // Default customer ID (would be set after login)
-    private String currentCustomerName = "";
+
+    // Common session properties
     private boolean isLoggedIn = false;
-    private Customer currentUser = null;
+    private String userType = null; // "customer" or "admin"
+
+    // Customer specific properties
+    private Customer currentCustomer = null;
+    private int currentCustomerId = -1;
+    private String currentCustomerName = "";
     private Cart userCart = null;
     private Order selectedOrder = null;
     private Restaurant selectedRestaurant = null;
+
+    // Admin specific properties
+    private Admin currentAdmin = null;
+    private int currentAdminId = -1;
+    private String currentAdminName = "";
 
     private SessionManager() {
         // Private constructor to enforce singleton pattern
@@ -34,38 +45,6 @@ public class SessionManager {
     }
 
     /**
-     * Get the ID of the currently logged-in customer
-     * @return The customer ID
-     */
-    public int getCurrentCustomerId() {
-        return currentCustomerId;
-    }
-
-    /**
-     * Set the ID of the currently logged-in customer
-     * @param customerId The customer ID to set
-     */
-    public void setCurrentCustomerId(int customerId) {
-        this.currentCustomerId = customerId;
-    }
-
-    /**
-     * Get the name of the currently logged-in customer
-     * @return The customer name
-     */
-    public String getCurrentCustomerName() {
-        return currentCustomerName;
-    }
-
-    /**
-     * Set the name of the currently logged-in customer
-     * @param customerName The customer name to set
-     */
-    public void setCurrentCustomerName(String customerName) {
-        this.currentCustomerName = customerName;
-    }
-
-    /**
      * Check if a user is currently logged in
      * @return true if logged in, false otherwise
      */
@@ -74,35 +53,117 @@ public class SessionManager {
     }
 
     /**
-     * Set the logged-in status
-     * @param loggedIn The logged-in status to set
+     * Check if the current user is an admin
+     * @return true if the user is an admin, false otherwise
      */
-    public void setLoggedIn(boolean loggedIn) {
-        this.isLoggedIn = loggedIn;
+    public boolean isAdmin() {
+        return isLoggedIn && "admin".equals(userType);
     }
 
     /**
-     * Get the currently logged-in user
-     * @return The current Customer object
+     * Check if the current user is a customer
+     * @return true if the user is a customer, false otherwise
      */
-    public Customer getCurrentUser() {
-        return currentUser;
+    public boolean isCustomer() {
+        return isLoggedIn && "customer".equals(userType);
     }
 
     /**
-     * Set the currently logged-in user
-     * @param user The Customer object to set as current user
+     * Get the type of the currently logged-in user
+     * @return "customer" or "admin" or null if not logged in
      */
-    public void setCurrentUser(Customer user) {
-        this.currentUser = user;
-        if (user != null) {
-            this.currentCustomerId = user.getCustomerId();
-            this.currentCustomerName = user.getFirstName() + " " + user.getLastName();
+    public String getUserType() {
+        return userType;
+    }
+
+    /**
+     * Set the type of the currently logged-in user
+     * @param type "customer" or "admin"
+     */
+    public void setUserType(String type) {
+        if ("customer".equals(type) || "admin".equals(type)) {
+            this.userType = type;
+        }
+    }
+
+    /**
+     * Get the ID of the currently logged-in customer
+     * @return The customer ID or -1 if not logged in as customer
+     */
+    public int getCurrentCustomerId() {
+        return isCustomer() ? currentCustomerId : -1;
+    }
+
+    /**
+     * Get the name of the currently logged-in customer
+     * @return The customer name or empty string if not logged in as customer
+     */
+    public String getCurrentCustomerName() {
+        return isCustomer() ? currentCustomerName : "";
+    }
+
+    /**
+     * Get the ID of the currently logged-in admin
+     * @return The admin ID or -1 if not logged in as admin
+     */
+    public int getCurrentAdminId() {
+        return isAdmin() ? currentAdminId : -1;
+    }
+
+    /**
+     * Get the name of the currently logged-in admin
+     * @return The admin name or empty string if not logged in as admin
+     */
+    public String getCurrentAdminName() {
+        return isAdmin() ? currentAdminName : "";
+    }
+
+    /**
+     * Get the currently logged-in customer
+     * @return The current Customer object or null if not logged in as customer
+     */
+    public Customer getCurrentCustomer() {
+        return isCustomer() ? currentCustomer : null;
+    }
+
+    /**
+     * Get the currently logged-in admin
+     * @return The current Admin object or null if not logged in as admin
+     */
+    public Admin getCurrentAdmin() {
+        return isAdmin() ? currentAdmin : null;
+    }
+
+    /**
+     * Get the current user (generic)
+     * @return The current user object (either Customer or Admin)
+     */
+    public Object getCurrentUser() {
+        if (isCustomer()) {
+            return currentCustomer;
+        } else if (isAdmin()) {
+            return currentAdmin;
+        }
+        return null;
+    }
+
+    /**
+     * Set the currently logged-in customer
+     * @param customer The Customer object to set as current user
+     */
+    public void setCurrentUser(Customer customer) {
+        this.userType = "customer";
+        this.currentCustomer = customer;
+        this.currentAdmin = null;
+
+        if (customer != null) {
+            this.currentCustomerId = customer.getCustomerId();
+            this.currentCustomerName = customer.getFirstName() + " " + customer.getLastName();
             this.isLoggedIn = true;
 
             // Initialize user cart if it doesn't exist
             if (this.userCart == null) {
-                this.userCart = new Cart(user.getCustomerId());
+                this.userCart = new Cart(customer.getCustomerId());
             }
         } else {
             clearSession();
@@ -110,11 +171,34 @@ public class SessionManager {
     }
 
     /**
-     * Get the user's shopping cart
-     * @return The Cart object for the current user
+     * Set the currently logged-in admin
+     * @param admin The Admin object to set as current user
+     */
+    public void setCurrentUser(Admin admin) {
+        this.userType = "admin";
+        this.currentAdmin = admin;
+        this.currentCustomer = null;
+
+        if (admin != null) {
+            this.currentAdminId = admin.getAdminId();
+            this.currentAdminName = admin.getFirstName() + " " + admin.getLastName();
+            this.isLoggedIn = true;
+
+            // Clear customer-specific data when logging in as admin
+            this.userCart = null;
+            this.selectedOrder = null;
+            this.selectedRestaurant = null;
+        } else {
+            clearSession();
+        }
+    }
+
+    /**
+     * Get the user's shopping cart (only applicable for customers)
+     * @return The Cart object for the current customer or null if not a customer
      */
     public Cart getUserCart() {
-        if (userCart == null && isLoggedIn) {
+        if (isCustomer() && userCart == null) {
             userCart = new Cart(currentCustomerId);
         }
         return userCart;
@@ -171,12 +255,21 @@ public class SessionManager {
      * Clear all session data (for logout)
      */
     public void clearSession() {
+        // Reset customer data
         currentCustomerId = -1;
         currentCustomerName = "";
-        currentUser = null;
+        currentCustomer = null;
         userCart = null;
         selectedOrder = null;
         selectedRestaurant = null;
+
+        // Reset admin data
+        currentAdminId = -1;
+        currentAdminName = "";
+        currentAdmin = null;
+
+        // Reset common data
+        userType = null;
         isLoggedIn = false;
     }
 }

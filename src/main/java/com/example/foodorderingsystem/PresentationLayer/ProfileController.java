@@ -250,6 +250,7 @@ public class ProfileController implements Initializable {
 
         dialog.getDialogPane().setContent(grid);
 
+        // This is the key fix - properly set result converter to handle OK button clicks
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == saveButtonType) {
                 customer.setFirstName(firstNameField.getText());
@@ -264,10 +265,10 @@ public class ProfileController implements Initializable {
         Optional<Customer> result = dialog.showAndWait();
         result.ifPresent(updatedCustomer -> {
             try {
-                // Update the database with the modified profile
+                // Update the database with the modified customer
                 customerDataAccess.updateCustomer(updatedCustomer);
 
-                // Reload the profile information
+                // Update UI to reflect changes
                 loadUserProfile();
 
                 showAlert(Alert.AlertType.INFORMATION, "Success", "Profile Updated",
@@ -424,6 +425,7 @@ public class ProfileController implements Initializable {
 
         dialog.getDialogPane().setContent(grid);
 
+        // Set result converter to properly handle dialog results
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == saveButtonType) {
                 location.setCity(cityField.getText());
@@ -438,6 +440,12 @@ public class ProfileController implements Initializable {
         result.ifPresent(updatedLocation -> {
             try {
                 Customer customer = (Customer) SessionManager.getInstance().getCurrentUser();
+
+                // Find the location in the customer's location list and update it
+                int index = customer.getLocation().indexOf(location);
+                if (index >= 0) {
+                    customer.getLocation().set(index, updatedLocation);
+                }
 
                 // Update the database with the modified address
                 customerDataAccess.updateCustomer(customer);

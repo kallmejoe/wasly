@@ -14,9 +14,11 @@ public class Payment {
     private Restaurant restaurant;
     private double amount; // Added amount field
     private LocalDateTime orderDate; // Added order date field
+    private LocalDateTime paymentDate; // Added payment date field
 
     // Default constructor for creating empty payment objects
     public Payment() {
+        this.paymentDate = LocalDateTime.now(); // Default to current date/time
     }
 
     public Payment(int paymentId, String status, String method, Delivery delivery, Restaurant restaurant) {
@@ -25,6 +27,7 @@ public class Payment {
         this.method = method;
         this.delivery = delivery;
         this.restaurant = restaurant;
+        this.paymentDate = LocalDateTime.now();
         if (delivery != null) {
             this.deliveryId = delivery.getDeliveryId();
         }
@@ -42,6 +45,7 @@ public class Payment {
         this.customerId = customerId;
         this.delivery = delivery;
         this.restaurant = restaurant;
+        this.paymentDate = LocalDateTime.now();
         if (delivery != null) {
             this.deliveryId = delivery.getDeliveryId();
         }
@@ -58,6 +62,7 @@ public class Payment {
         this.amount = amount;
         this.delivery = delivery;
         this.restaurant = restaurant;
+        this.paymentDate = LocalDateTime.now();
         if (delivery != null) {
             this.deliveryId = delivery.getDeliveryId();
         }
@@ -171,5 +176,14 @@ public class Payment {
 
     public void setOrderDate(LocalDateTime orderDate) {
         this.orderDate = orderDate;
+    }
+
+    // Payment date getter and setter
+    public LocalDateTime getPaymentDate() {
+        return paymentDate;
+    }
+
+    public void setPaymentDate(LocalDateTime paymentDate) {
+        this.paymentDate = paymentDate;
     }
 }

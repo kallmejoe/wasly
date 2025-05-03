@@ -1,13 +1,12 @@
 package com.example.foodorderingsystem.BusinessLayer;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Product {
     private int productId;
     private String name;
-    private BigDecimal unitPrice;
+    private double unitPrice;
     private int amountInStock;
     private Restaurant restaurant; // Changed from restaurantId to Restaurant object
     private Category category;     // Changed from categoryId to Category object
@@ -18,7 +17,7 @@ public class Product {
         this.images = new ArrayList<>();
     }
 
-    public Product(int productId, String name, BigDecimal unitPrice, int amountInStock,
+    public Product(int productId, String name, double unitPrice, int amountInStock,
                    Restaurant restaurant, Category category) {
         this.productId = productId;
         this.name = name;
@@ -30,7 +29,7 @@ public class Product {
     }
 
     // Constructor with description
-    public Product(int productId, String name, String description, BigDecimal unitPrice, int amountInStock,
+    public Product(int productId, String name, String description, double unitPrice, int amountInStock,
                    Restaurant restaurant, Category category) {
         this.productId = productId;
         this.name = name;
@@ -43,7 +42,7 @@ public class Product {
     }
 
     // Constructor without ID for new products
-    public Product(String name, BigDecimal unitPrice, int amountInStock,
+    public Product(String name, double unitPrice, int amountInStock,
                    Restaurant restaurant, Category category) {
         this.name = name;
         this.unitPrice = unitPrice;
@@ -54,7 +53,7 @@ public class Product {
     }
 
     // Constructor that accepts IDs instead of objects (for backward compatibility)
-    public Product(int productId, String name, BigDecimal unitPrice, int amountInStock,
+    public Product(int productId, String name, double unitPrice, int amountInStock,
                    int restaurantId, int categoryId) {
         this.productId = productId;
         this.name = name;
@@ -65,7 +64,7 @@ public class Product {
     }
 
     // Constructor without ID that accepts IDs instead of objects (for backward compatibility)
-    public Product(String name, BigDecimal unitPrice, int amountInStock,
+    public Product(String name, double unitPrice, int amountInStock,
                    int restaurantId, int categoryId) {
         this.name = name;
         this.unitPrice = unitPrice;
@@ -99,12 +98,36 @@ public class Product {
         this.description = description;
     }
 
-    public BigDecimal getUnitPrice() {
+    public double getUnitPrice() {
         return unitPrice;
     }
 
-    public void setUnitPrice(BigDecimal unitPrice) {
+    public void setUnitPrice(double unitPrice) {
         this.unitPrice = unitPrice;
+    }
+
+    public double getPrice() {
+        return unitPrice;
+    }
+
+    public void setPrice(double price) {
+        this.unitPrice = price;
+    }
+
+    public void setPrice(Object price) {
+        if (price instanceof Double) {
+            this.unitPrice = (Double) price;
+        } else if (price instanceof String) {
+            try {
+                this.unitPrice = Double.parseDouble((String) price);
+            } catch (NumberFormatException e) {
+                this.unitPrice = 0.0;
+            }
+        } else if (price instanceof Number) {
+            this.unitPrice = ((Number) price).doubleValue();
+        } else {
+            this.unitPrice = 0.0;
+        }
     }
 
     public int getAmountInStock() {

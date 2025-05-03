@@ -32,37 +32,73 @@ public class RestaurantDataAccess {
     }
 
     public void insertRestaurant(Restaurant restaurant) throws SQLException {
-        // Using AddRestaurant stored procedure
-        String callAddRestaurant = "{call CreateRestaurant(?)}";
+        // Set auto-commit to false to start a transaction
+        boolean originalAutoCommit = connection.getAutoCommit();
+        connection.setAutoCommit(false);
 
-        try (CallableStatement stmt = connection.prepareCall(callAddRestaurant)) {
-            // Set restaurant name parameter
-            stmt.setString(1, restaurant.getName());
+        try {
+            // Using AddRestaurant stored procedure
+            String callAddRestaurant = "{call CreateRestaurant(?)}";
 
-            // Execute the stored procedure and get the generated keys
-            stmt.execute();
+            try (CallableStatement stmt = connection.prepareCall(callAddRestaurant)) {
+                // Set restaurant name parameter
+                stmt.setString(1, restaurant.getName());
 
-            // Get the generated restaurant ID
-            try (ResultSet rs = stmt.getGeneratedKeys()) {
-                if (rs.next()) {
-                    int restaurantId = rs.getInt(1);
-                    restaurant.setRestaurantId(restaurantId);
+                // Execute the stored procedure
+                stmt.execute();
 
-                    // Insert phone numbers
-                    for (String phone : restaurant.getPhoneNo()) {
-                        addRestaurantPhone(restaurantId, phone);
+                // Commit the restaurant creation immediately to ensure it's in the database
+                connection.commit();
+
+                // Instead of using getGeneratedKeys() which doesn't work with stored procedures,
+                // we'll get the last inserted ID with a separate query
+                try (java.sql.Statement idStmt = connection.createStatement();
+                     ResultSet rs = idStmt.executeQuery("SELECT SCOPE_IDENTITY() AS Restaurant_ID")) {
+
+                    if (rs.next()) {
+                        int restaurantId = rs.getInt("Restaurant_ID");
+                        restaurant.setRestaurantId(restaurantId);
+
+                        // Verify the restaurant was actually created
+                        try (java.sql.Statement verifyStmt = connection.createStatement();
+                             ResultSet verifyRs = verifyStmt.executeQuery("SELECT COUNT(*) FROM Restaurant WHERE Restaurant_ID = " + restaurantId)) {
+
+                            if (verifyRs.next() && verifyRs.getInt(1) > 0) {
+                                // Restaurant exists, proceed with adding locations only
+                                // Phone numbers are no longer added during restaurant creation
+
+                                // Insert locations
+                                for (Location location : restaurant.getLocations()) {
+                                    addRestaurantLocation(restaurantId, location);
+                                }
+
+                                // Commit the entire transaction
+                                connection.commit();
+                                System.out.println("Restaurant inserted successfully with ID: " + restaurantId);
+                            } else {
+                                // Restaurant not found, roll back
+                                connection.rollback();
+                                throw new SQLException("Restaurant creation verification failed. No restaurant with ID " + restaurantId + " found.");
+                            }
+                        }
+                    } else {
+                        // No ID returned, roll back
+                        connection.rollback();
+                        throw new SQLException("Creating restaurant failed, no ID obtained.");
                     }
-
-                    // Insert locations
-                    for (Location location : restaurant.getLocations()) {
-                        addRestaurantLocation(restaurantId, location);
-                    }
-
-                    System.out.println("Restaurant inserted successfully with ID: " + restaurantId);
-                } else {
-                    throw new SQLException("Creating restaurant failed, no ID obtained.");
                 }
             }
+        } catch (SQLException e) {
+            // Roll back on any exception
+            try {
+                connection.rollback();
+            } catch (SQLException rollbackEx) {
+                System.err.println("Error during rollback: " + rollbackEx.getMessage());
+            }
+            throw new SQLException("Error saving restaurant: " + e.getMessage(), e);
+        } finally {
+            // Restore original auto-commit setting
+            connection.setAutoCommit(originalAutoCommit);
         }
     }
 
@@ -215,7 +251,7 @@ public class RestaurantDataAccess {
         return getRestaurant(restaurantId);
     }
 
-    public void updateRestaurant(Restaurant restaurant) throws SQLException {
+    public boolean updateRestaurant(Restaurant restaurant) throws SQLException {
         // Using UpdateRestaurantName stored procedure
         String callUpdateRestaurantName = "{call UpdateRestaurantName(?, ?)}";
 
@@ -239,6 +275,7 @@ public class RestaurantDataAccess {
             }
 
             System.out.println("Restaurant updated successfully.");
+            return true;
         }
     }
 

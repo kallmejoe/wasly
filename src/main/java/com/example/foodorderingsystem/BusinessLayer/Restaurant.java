@@ -11,6 +11,7 @@ public class Restaurant {
     private static int restaurantCounter = 0;
     private List<String> phoneNo;
     private String phone; // Single phone for compatibility
+    private String description; // Added description field
 
     // Default constructor
     public Restaurant() {
@@ -108,5 +109,37 @@ public class Restaurant {
     // Get ID for compatibility with some operations
     public int getId() {
         return restaurantId;
+    }
+
+    // Added method for description
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    // Added method to add a restaurant (return boolean for success/failure)
+    public boolean addRestaurant(Restaurant restaurant) {
+        // This is a placeholder method that would typically interact with a database
+        // Since it's implemented at the class level, we'll just return true
+        // In a real implementation, this would likely be in a RestaurantManager class
+        return true;
+    }
+
+    // Added methods to get latitude and longitude from the first location
+    public double getLatitude() {
+        if (getLocation() != null) {
+            return getLocation().getLatitude();
+        }
+        return 0.0;
+    }
+
+    public double getLongitude() {
+        if (getLocation() != null) {
+            return getLocation().getLongitude();
+        }
+        return 0.0;
     }
 }

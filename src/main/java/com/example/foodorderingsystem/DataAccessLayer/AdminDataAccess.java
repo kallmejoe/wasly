@@ -1,12 +1,6 @@
 package com.example.foodorderingsystem.DataAccessLayer;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,49 +44,50 @@ public class AdminDataAccess {
             throw new SQLException("Admin must have at least one phone number");
         }
 
-        String callProc = "{call InsertFullAdmin(?, ?, ?, ?, ?, ?, ?)}";
+        // Check if the admin has at least one restaurant to manage
+        if (admin.getRestaurantsManaged() == null || admin.getRestaurantsManaged().isEmpty()) {
+            throw new SQLException("Admin must manage at least one restaurant");
+        }
+
+        String callProc = "{call CreateAdminFull(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
 
         try (CallableStatement stmt = connection.prepareCall(callProc)) {
             // Set parameters for the stored procedure
-            stmt.setString(1, admin.getEmail());
-            stmt.setString(2, admin.getPassword());
-            stmt.setString(3, admin.getFirstName());
+            stmt.setInt(1, admin.getAdminId()); // Admin_Id parameter
+            stmt.setString(2, admin.getEmail());
+            stmt.setString(3, admin.getPassword());
+            stmt.setString(4, admin.getFirstName());
 
             // Middle name can be null
             if (admin.getMiddleName() == null || admin.getMiddleName().isEmpty()) {
-                stmt.setNull(4, Types.VARCHAR);
+                stmt.setNull(5, Types.NVARCHAR);
             } else {
-                stmt.setString(4, admin.getMiddleName());
+                stmt.setString(5, admin.getMiddleName());
             }
 
-            stmt.setString(5, admin.getLastName());
-            stmt.setDouble(6, admin.getSalary());
+            stmt.setString(6, admin.getLastName());
+            stmt.setBigDecimal(7, new java.math.BigDecimal(admin.getSalary())); // Using BigDecimal for DECIMAL(10,2)
 
             // Use the first phone number
-            stmt.setString(7, admin.getPhoneNumbers().get(0));
+            stmt.setString(8, admin.getPhoneNumbers().get(0));
+
+            // Set the first restaurant ID
+            stmt.setInt(9, admin.getRestaurantsManaged().get(0));
 
             // Execute the stored procedure
             stmt.execute();
 
-            // Get the generated admin ID
-            try (Statement idStmt = connection.createStatement();
-                 ResultSet rs = idStmt.executeQuery("SELECT MAX(Admin_ID) AS Admin_ID FROM Admin")) {
-                if (rs.next()) {
-                    int adminId = rs.getInt("Admin_ID");
-                    admin.setAdminId(adminId);
+            // The stored procedure now inserts the Admin, phone, and restaurant association
+            // We only need to handle additional phone numbers and restaurant associations
 
-                    // Add additional phone numbers if present
-                    for (int i = 1; i < admin.getPhoneNumbers().size(); i++) {
-                        addAdminPhone(adminId, admin.getPhoneNumbers().get(i));
-                    }
+            // Add additional phone numbers if present
+            for (int i = 1; i < admin.getPhoneNumbers().size(); i++) {
+                addAdminPhone(admin.getAdminId(), admin.getPhoneNumbers().get(i));
+            }
 
-                    // Add restaurant associations if present
-                    if (admin.getRestaurantsManaged() != null && !admin.getRestaurantsManaged().isEmpty()) {
-                        for (Integer restaurantId : admin.getRestaurantsManaged()) {
-                            addAdminRestaurant(adminId, restaurantId);
-                        }
-                    }
-                }
+            // Add additional restaurant associations if present
+            for (int i = 1; i < admin.getRestaurantsManaged().size(); i++) {
+                addAdminRestaurant(admin.getAdminId(), admin.getRestaurantsManaged().get(i));
             }
 
             System.out.println("Admin inserted successfully via stored procedure.");
@@ -100,6 +95,27 @@ public class AdminDataAccess {
         } catch (SQLException e) {
             e.printStackTrace();
             throw new SQLException("Error inserting admin via stored procedure: " + e.getMessage(), e);
+        }
+    }
+    // Validate admin credentials
+    public Admin validateAdmin(String email, String password) throws SQLException {
+        String query = "SELECT Admin_ID FROM Admin WHERE Email = ? AND Password = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, email);
+            stmt.setString(2, password);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    int adminId = rs.getInt("Admin_ID");
+                    // Get the full admin details using the existing getAdminById method
+                    return getAdminById(adminId);
+                }
+                return null; // No admin with those credentials found
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException("Error validating admin credentials: " + e.getMessage(), e);
         }
     }
 
@@ -290,5 +306,10 @@ public class AdminDataAccess {
             stmt.setInt(2, restaurantId);
             stmt.execute();
         }
+    }
+
+    // Add addAdmin method to fix the error
+    public void addAdmin(Admin admin) throws SQLException {
+        insertAdmin(admin);
     }
 }

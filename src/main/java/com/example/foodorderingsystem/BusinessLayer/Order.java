@@ -11,35 +11,32 @@ public class Order {
     private Delivery delivery;
     private Payment payment;
     private double totalAmount;
-    // Removed status field
+    private static int orderCounter = 0; // Static counter for unique order IDs
 
     // No-argument constructor
     public Order() {
         this.orderDate = LocalDateTime.now();
-        // Removed status initialization
     }
 
-    public Order(int orderId, LocalDateTime orderDate, Customer customer,
+
+    public Order( LocalDateTime orderDate, Customer customer,
                  Restaurant restaurant, Delivery delivery, Payment payment) {
-        this.orderId = orderId;
+        this.orderId = ++orderCounter;
         this.orderDate = orderDate;
         this.customer = customer;
         this.restaurant = restaurant;
         this.delivery = delivery;
         this.payment = payment;
-        // Removed status initialization
         this.totalAmount = payment != null ? payment.getAmount() : 0.0;
     }
 
-
-    public Order(int orderId, LocalDateTime now, Customer customer, Restaurant restaurant, Payment payment) {
-        this.orderId = orderId;
+    public Order( LocalDateTime now, Customer customer, Restaurant restaurant, Payment payment) {
+        this.orderId = ++orderCounter;
         this.orderDate = now;
         this.customer = customer;
         this.restaurant = restaurant;
         this.delivery = null; // Delivery is not set in this constructor
         this.payment = payment;
-        // Removed status initialization
         this.totalAmount = payment != null ? payment.getAmount() : 0.0;
     }
 
@@ -48,7 +45,6 @@ public class Order {
                 String paymentMethod,
                 java.util.Map<Product, Integer> items, BigDecimal totalAmount) {
         this.orderDate = LocalDateTime.now();
-        // Removed status parameter and initialization
         this.totalAmount = totalAmount.doubleValue();
         // Note: Customer, Restaurant, Delivery and Payment objects will be populated later
         // by the OrderDataAccess class
@@ -111,5 +107,26 @@ public class Order {
         this.totalAmount = totalAmount;
     }
 
-    // Removed getStatus and setStatus methods
+    // Additional getters to support direct access to related entity IDs
+    public int getCustomerId() {
+        return customer != null ? customer.getCustomerId() : 0;
+    }
+
+    public int getRestaurantId() {
+        return restaurant != null ? restaurant.getRestaurantId() : 0;
+    }
+
+    // Alias for getOrderDate to support getOrderTime calls
+    public LocalDateTime getOrderTime() {
+        return orderDate;
+    }
+
+    // Added methods for status
+
+
+
+    // For compatibility with code expecting getOrder()
+    public Order getOrder() {
+        return this;
+    }
 }

@@ -1,0 +1,242 @@
+/* Admin Dashboard Styles */
+
+/* Base Styles */
+* {
+    -fx-font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.root {
+    -fx-background-color: #f5f5f5;
+}
+
+/* Sidebar Styles */
+#sidebar {
+    -fx-background-color: #2c3e50;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 0);
+}
+
+#brand {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #ecf0f1;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 10px 15px;
+    -fx-font-size: 14px;
+}
+
+.nav-button:hover {
+    -fx-background-color: #34495e;
+}
+
+.nav-button:pressed {
+    -fx-background-color: #1a2530;
+}
+
+.nav-button.active {
+    -fx-background-color: #3498db;
+}
+
+.logout-button {
+    -fx-background-color: #c0392b;
+}
+
+.logout-button:hover {
+    -fx-background-color: #e74c3c;
+}
+
+/* Content Area Styles */
+.content-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.welcome-header {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.welcome-subheader {
+    -fx-font-size: 18px;
+    -fx-text-fill: #7f8c8d;
+}
+
+/* Action Button Styles */
+.action-button {
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+}
+
+.action-button:hover {
+    -fx-background-color: #2980b9;
+}
+
+.add-button {
+    -fx-background-color: #27ae60;
+    -fx-text-fill: white;
+}
+
+.add-button:hover {
+    -fx-background-color: #2ecc71;
+}
+
+.refresh-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+}
+
+.refresh-button:hover {
+    -fx-background-color: #2980b9;
+}
+
+/* Card Styles */
+.card-container {
+    -fx-padding: 20px;
+    -fx-hgap: 20px;
+    -fx-vgap: 20px;
+    -fx-background-color: #f9f9f9;
+}
+
+.card {
+    -fx-background-color: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-padding: 0;
+    -fx-spacing: 0;
+    -fx-border-color: #f0f0f0;
+    -fx-border-width: 1px;
+    -fx-transition: all 0.3s ease;
+}
+
+.card:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 15, 0, 0, 6);
+    -fx-translate-y: -2px;
+}
+
+.card-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.card-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: #7f8c8d;
+    -fx-padding: 0 0 10px 0;
+}
+
+.card-content {
+    -fx-font-size: 14px;
+    -fx-text-fill: #34495e;
+    -fx-padding: 5px 0;
+}
+
+.card-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #7f8c8d;
+}
+
+.card-value {
+    -fx-text-fill: #34495e;
+}
+
+.card-actions {
+    -fx-spacing: 8px;
+    -fx-padding: 10px 0 0 0;
+}
+
+.card-button {
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+.primary-button {
+    -fx-background-color: #4285f4;
+    -fx-text-fill: white;
+}
+
+.primary-button:hover {
+    -fx-background-color: #3275e4;
+}
+
+.edit-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+}
+
+.edit-button:hover {
+    -fx-background-color: #2980b9;
+}
+
+.delete-button {
+    -fx-background-color: #f44336;
+    -fx-text-fill: white;
+}
+
+.delete-button:hover {
+    -fx-background-color: #e53935;
+}
+
+/* Status bar styles */
+#statusLabel {
+    -fx-text-fill: #7f8c8d;
+}
+
+/* Scroll pane styles */
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar:vertical,
+.scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar:vertical .thumb,
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: #bdc3c7;
+    -fx-background-radius: 4px;
+}
+
+.scroll-bar:vertical .track,
+.scroll-bar:horizontal .track {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane > .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+
+/* FlowPane styling */
+.flow-pane {
+    -fx-background-color: transparent;
+}
+
+/* Alert status styles */
+.status-success {
+    -fx-text-fill: #2ecc71;
+}
+
+.status-error {
+    -fx-text-fill: #e74c3c;
+}
+
+.status-warning {
+    -fx-text-fill: #f39c12;
+}

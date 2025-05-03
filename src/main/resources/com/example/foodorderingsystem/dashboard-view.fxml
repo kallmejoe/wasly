@@ -54,7 +54,7 @@
                            style="-fx-background-color: transparent;">
                         <graphic>
                             <ImageView fitHeight="20" fitWidth="20" preserveRatio="true">
-                                <Image url="@images/search-icon.png"/>
+                                <Image url="@images/location-pin.svg"/>
                             </ImageView>
                         </graphic>
                     </Button>

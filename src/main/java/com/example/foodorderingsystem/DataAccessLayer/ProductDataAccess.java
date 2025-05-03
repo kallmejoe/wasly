@@ -1,6 +1,5 @@
 package com.example.foodorderingsystem.DataAccessLayer;
 
-import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -59,38 +58,39 @@ public class ProductDataAccess {
 
     // INSERT operation using stored procedure
     public void insertProduct(Product product) throws SQLException {
-        String callProc = "{call CreateProuct(?, ?, ?, ?, ?, ?)}";
+        String callProc = "{call CreateProduct(?, ?, ?, ?, ?)}";
 
         try (CallableStatement stmt = connection.prepareCall(callProc)) {
             // Set parameters for the stored procedure
             stmt.setString(1, product.getName());
-            stmt.setBigDecimal(2, product.getUnitPrice());
+            stmt.setDouble(2, product.getUnitPrice());
             stmt.setInt(3, product.getAmountInStock());
-
-            // Use getRestaurantId and getCategoryId which now extract IDs from objects
             stmt.setInt(4, product.getRestaurantId());
             stmt.setInt(5, product.getCategoryId());
 
-            // Register output parameter for the generated product ID
-            stmt.registerOutParameter(6, Types.INTEGER);
+            // Execute the stored procedure and get the result set
+            try (ResultSet rs = stmt.executeQuery()) {
+                // Retrieve the generated product ID from the result set
+                if (rs.next()) {
+                    int productId = rs.getInt("ProductID"); // Column name should match what's returned by the stored procedure
+                    product.setProductId(productId);
 
-            // Execute the stored procedure
-            stmt.execute();
+                    // Add product images if present
+                    if (product.getImages() != null && !product.getImages().isEmpty()) {
+                        for (ProductImage image : product.getImages()) {
+                            image.setProductId(productId); // Ensure the image has the correct product ID
+                            addProductImage(image);
+                        }
+                    }
 
-            // Get the generated product ID
-            int productId = stmt.getInt(6);
-            product.setProductId(productId);
+                    System.out.println("Product inserted successfully with ID: " + productId);
+                } else {
 
-            // Add product images if present
-            if (product.getImages() != null && !product.getImages().isEmpty()) {
-                for (ProductImage image : product.getImages()) {
-                    image.setProductId(productId); // Ensure the image has the correct product ID
-                    addProductImage(image);
+                    throw new SQLException("Failed to retrieve the product ID after insertion");
                 }
             }
-
-            System.out.println("Product inserted successfully via stored procedure with ID: " + productId);
         } catch (SQLException e) {
+            System.out.println("Failed  insertion" + product.getRestaurantId());
             e.printStackTrace();
             throw new SQLException("Error inserting product via stored procedure: " + e.getMessage(), e);
         }
@@ -106,14 +106,10 @@ public class ProductDataAccess {
             // Set parameters for the stored procedure
             stmt.setInt(1, productId);
             stmt.setString(2, product.getName());
-            stmt.setBigDecimal(3, product.getUnitPrice());
+            stmt.setDouble(3, product.getUnitPrice());
             stmt.setInt(4, product.getAmountInStock());
-
-            // Use getRestaurantId and getCategoryId which now extract IDs from objects
-            stmt.setInt(5, product.getRestaurantId());
-            stmt.setInt(6, product.getCategoryId());
-
-            // Execute the stored procedure for basic product info
+            stmt.setInt(5, product.getCategoryId());
+            stmt.setInt(6, product.getRestaurantId());
             stmt.execute();
 
             // Update product images (delete all and re-insert)
@@ -166,7 +162,7 @@ public class ProductDataAccess {
             }
 
             String name = productRs.getString("PName");
-            BigDecimal unitPrice = productRs.getBigDecimal("Product_Unit_Price");
+            double unitPrice = productRs.getDouble("Product_Unit_Price");
             int amountInStock = productRs.getInt("Product_Amount_Stock");
             int restaurantId = productRs.getInt("Restaurant_ID");
             int categoryId = productRs.getInt("Category_ID");
@@ -252,36 +248,9 @@ public class ProductDataAccess {
         return products;
     }
 
-    // Get products by category ID
-    public List<Product> getProductsByCategory(int categoryId) throws SQLException {
-        String callProc = "{call GetProductsByCategory(?)}";
-        List<Product> products = new ArrayList<>();
-
-        try (CallableStatement stmt = connection.prepareCall(callProc)) {
-            stmt.setInt(1, categoryId);
-            boolean hasResults = stmt.execute();
-
-            if (hasResults) {
-                ResultSet rs = stmt.getResultSet();
-                while (rs.next()) {
-                    int productId = rs.getInt("Product_ID");
-                    Product product = getProductById(productId);
-                    if (product != null) {
-                        products.add(product);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException("Error retrieving products by category ID: " + e.getMessage(), e);
-        }
-
-        return products;
-    }
-
     // Helper method to delete all images for a product
     private void deleteProductImages(int productId) throws SQLException {
-        String callProc = "{call DeleteProductImages(?)}";
+        String callProc = "{call DeleteProductImageC(?)}";
 
         try (CallableStatement stmt = connection.prepareCall(callProc)) {
             stmt.setInt(1, productId);
@@ -297,22 +266,9 @@ public class ProductDataAccess {
             stmt.setString(1, image.getImageName() + ".jpg");
             stmt.setInt(2, image.getProductId());
             stmt.setString(3, image.getAlt());
-            stmt.execute();
-        }
-    }
 
-    // Update product stock
-    public void updateProductStock(int productId, int newStockAmount) throws SQLException {
-        String callProc = "{call UpdateProductStock(?, ?)}";
-
-        try (CallableStatement stmt = connection.prepareCall(callProc)) {
-            stmt.setInt(1, productId);
-            stmt.setInt(2, newStockAmount);
+            // Execute the stored procedure and get the result set
             stmt.execute();
-            System.out.println("Product stock updated successfully.");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException("Error updating product stock: " + e.getMessage(), e);
         }
     }
 
@@ -332,49 +288,8 @@ public class ProductDataAccess {
         }
     }
 
-    // Remove product from order
-    public void removeProductFromOrder(int productId, int orderId) throws SQLException {
-        String callProc = "{call RemoveProductFromOrder(?, ?)}";
-
-        try (CallableStatement stmt = connection.prepareCall(callProc)) {
-            stmt.setInt(1, productId);
-            stmt.setInt(2, orderId);
-            stmt.execute();
-            System.out.println("Product removed from order successfully.");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException("Error removing product from order: " + e.getMessage(), e);
-        }
-    }
-
-    // Get products by order ID
-    public List<Product> getProductsByOrder(int orderId) throws SQLException {
-        String callProc = "{call GetProductsByOrder(?)}";
-        List<Product> products = new ArrayList<>();
-
-        try (CallableStatement stmt = connection.prepareCall(callProc)) {
-            stmt.setInt(1, orderId);
-            boolean hasResults = stmt.execute();
-
-            if (hasResults) {
-                ResultSet rs = stmt.getResultSet();
-                while (rs.next()) {
-                    int productId = rs.getInt("Product_ID");
-                    int quantity = rs.getInt("Quantity");
-
-                    Product product = getProductById(productId);
-                    if (product != null) {
-                        // You might want to add the quantity information to the product
-                        // For example, you could add a transient field to the Product class
-                        products.add(product);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException("Error retrieving products by order ID: " + e.getMessage(), e);
-        }
-
-        return products;
+    // Add addProduct method to fix the error
+    public void addProduct(Product product) throws SQLException {
+        insertProduct(product);
     }
 }
