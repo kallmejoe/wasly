@@ -1,10 +1,16 @@
 package com.example.foodorderingsystem.PresentationLayer;
 
+import java.io.IOException;
+import java.net.URL;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.ResourceBundle;
+import java.util.stream.Collectors;
+
 import com.example.foodorderingsystem.BusinessLayer.Account;
-import com.example.foodorderingsystem.BusinessLayer.Customer;
 import com.example.foodorderingsystem.BusinessLayer.Restaurant;
 import com.example.foodorderingsystem.DataAccessLayer.RestaurantDataAccess;
-import com.example.foodorderingsystem.FoodOrderingApp;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -21,13 +27,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
-import java.io.IOException;
-import java.net.URL;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 public class DashboardController implements Initializable {
 
@@ -195,12 +194,32 @@ public class DashboardController implements Initializable {
 
                 // Update UI with search results
                 allRestaurantsContainer.getChildren().clear();
-                for (Restaurant restaurant : searchResults) {
-                    allRestaurantsContainer.getChildren().add(createRestaurantCard(restaurant));
+
+                if (searchResults.isEmpty()) {
+                    // Show a message when no results are found
+                    Label noResultsLabel = new Label("No restaurants found matching \"" + searchTerm + "\"");
+                    noResultsLabel.getStyleClass().add("no-results-message");
+                    noResultsLabel.setStyle("-fx-font-size: 16px; -fx-padding: 20px;");
+                    allRestaurantsContainer.getChildren().add(noResultsLabel);
+                } else {
+                    // Display search results
+                    for (Restaurant restaurant : searchResults) {
+                        allRestaurantsContainer.getChildren().add(createRestaurantCard(restaurant));
+                    }
                 }
             } catch (SQLException e) {
                 System.err.println("Error searching restaurants: " + e.getMessage());
+
+                // Show error alert
+                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                alert.setTitle("Search Error");
+                alert.setHeaderText("Could not search restaurants");
+                alert.setContentText("An error occurred: " + e.getMessage());
+                alert.showAndWait();
             }
+        } else {
+            // If search field is empty, reload all restaurants
+            loadRestaurants();
         }
     }
 

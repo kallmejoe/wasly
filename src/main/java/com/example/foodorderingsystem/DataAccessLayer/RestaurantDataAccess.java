@@ -1,6 +1,11 @@
 package com.example.foodorderingsystem.DataAccessLayer;
 
-import java.sql.*;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -182,18 +187,33 @@ public class RestaurantDataAccess {
     public List<Restaurant> searchRestaurants(String searchTerm) throws SQLException {
         List<Restaurant> allRestaurants = getAllRestaurants();
         List<Restaurant> result = new ArrayList<>();
+        String lowerSearchTerm = searchTerm.toLowerCase();
 
         for (Restaurant restaurant : allRestaurants) {
-            if (restaurant.getName().toLowerCase().contains(searchTerm.toLowerCase())) {
+            // Check restaurant name
+            if (restaurant.getName() != null &&
+                restaurant.getName().toLowerCase().contains(lowerSearchTerm)) {
                 result.add(restaurant);
                 continue;
             }
 
-            for (Location loc : restaurant.getLocations()) {
-                if (loc.getCity().toLowerCase().contains(searchTerm.toLowerCase()) ||
-                        loc.getStreetName().toLowerCase().contains(searchTerm.toLowerCase())) {
+            // Check restaurant locations
+            if (restaurant.getLocations() != null) {
+                boolean locationMatch = false;
+
+                for (Location loc : restaurant.getLocations()) {
+                    // Safely check city and street name for null before calling toLowerCase()
+                    if ((loc.getCity() != null &&
+                         loc.getCity().toLowerCase().contains(lowerSearchTerm)) ||
+                        (loc.getStreetName() != null &&
+                         loc.getStreetName().toLowerCase().contains(lowerSearchTerm))) {
+                        locationMatch = true;
+                        break;
+                    }
+                }
+
+                if (locationMatch) {
                     result.add(restaurant);
-                    break;
                 }
             }
         }
