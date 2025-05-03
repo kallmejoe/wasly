@@ -290,13 +290,13 @@ public class ProductDialogController {
 
     @FXML
     public void handleOk() {
-        if (validateInputs()) {
+//        if (validateInputs()) {
             updateProductFromInputs();
             if (saveProduct()) {
                 dialog.setResult(product);
                 dialog.close();
             }
-        }
+//        }
     }
 
     @FXML

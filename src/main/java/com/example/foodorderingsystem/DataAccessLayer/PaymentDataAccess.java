@@ -93,8 +93,8 @@ public class PaymentDataAccess {
                 if (rs.next()) {
                     Payment payment = new Payment();
                     payment.setPaymentId(paymentId);
-                    payment.setStatus(rs.getString("Status"));
-                    payment.setMethod(rs.getString("Method"));
+                    payment.setStatus(rs.getString("Payment_Status"));
+                    payment.setMethod(rs.getString("Payment_Method"));
 
                     // Set related information
                     payment.setOrderId(rs.getInt("Order_ID"));

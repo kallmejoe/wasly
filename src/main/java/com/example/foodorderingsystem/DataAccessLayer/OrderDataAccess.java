@@ -1,17 +1,24 @@
 package com.example.foodorderingsystem.DataAccessLayer;
 
-import com.example.foodorderingsystem.BusinessLayer.Customer;
-import com.example.foodorderingsystem.BusinessLayer.Delivery;
-import com.example.foodorderingsystem.BusinessLayer.Order;
-import com.example.foodorderingsystem.BusinessLayer.Payment;
-import com.example.foodorderingsystem.BusinessLayer.Restaurant;
-import com.example.foodorderingsystem.BusinessLayer.Product;
-
-import java.sql.*;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
+import com.example.foodorderingsystem.BusinessLayer.Customer;
+import com.example.foodorderingsystem.BusinessLayer.Delivery;
+import com.example.foodorderingsystem.BusinessLayer.Order;
+import com.example.foodorderingsystem.BusinessLayer.Payment;
+import com.example.foodorderingsystem.BusinessLayer.Product;
+import com.example.foodorderingsystem.BusinessLayer.Restaurant;
 
 public class OrderDataAccess {
 
@@ -140,8 +147,9 @@ public class OrderDataAccess {
                 Product product = entry.getKey();
                 int quantity = entry.getValue();
 
-                stmt.setInt(1, orderId);
-                stmt.setInt(2, product.getProductId());
+                // Fixed parameter order to match the stored procedure's expected order
+                stmt.setInt(1, product.getProductId());
+                stmt.setInt(2, orderId);
                 stmt.setInt(3, quantity);
 
                 stmt.execute();
@@ -182,6 +190,12 @@ public class OrderDataAccess {
                     payment.setMethod(paymentMethod);
 
                     Order order = new Order(orderDate, customer, restaurant, delivery, payment);
+                    order.setOrderId(orderId);
+
+                    // Calculate and set the total amount from the has_Product_Order table
+                    double totalAmount = calculateOrderTotal(orderId);
+                    order.setTotalAmount(totalAmount);
+
                     orders.add(order);
                 }
             }
@@ -191,6 +205,38 @@ public class OrderDataAccess {
         }
 
         return orders;
+    }
+
+    /**
+     * Calculates the total amount of an order from the has_Product_Order table
+     * @param orderId The ID of the order
+     * @return The total amount of the order
+     * @throws SQLException if a database error occurs
+     */
+    public double calculateOrderTotal(int orderId) throws SQLException {
+        String sql = "SELECT p.Product_ID, p.Product_Unit_Price, hpo.Quantity " +
+                     "FROM has_Product_Order hpo " +
+                     "JOIN Products p ON hpo.Product_ID = p.Product_ID " +
+                     "WHERE hpo.Order_ID = ?";
+
+        double total = 0.0;
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, orderId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    double price = rs.getDouble("Product_Unit_Price");
+                    int quantity = rs.getInt("Quantity");
+                    total += price * quantity;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error calculating order total: " + e.getMessage());
+            throw e;
+        }
+
+        return total;
     }
 
     public Order getCustomerOrderById(int customerId, int orderId) throws SQLException {
@@ -221,6 +267,11 @@ public class OrderDataAccess {
                     payment.setMethod(paymentMethod);
 
                     order = new Order(orderDate, customer, restaurant, delivery, payment);
+                    order.setOrderId(orderId);
+
+                    // Calculate and set the total amount from the has_Product_Order table
+                    double totalAmount = calculateOrderTotal(orderId);
+                    order.setTotalAmount(totalAmount);
                 }
             }
         } catch (SQLException e) {
@@ -350,6 +401,12 @@ public class OrderDataAccess {
                 Payment payment = paymentDataAccess.getPaymentById(paymentId);
 
                 Order order = new Order(orderDate, customer, restaurant, delivery, payment);
+                order.setOrderId(orderId); // Set the order ID
+
+                // Calculate and set the total amount from the has_Product_Order table
+                double totalAmount = calculateOrderTotal(orderId);
+                order.setTotalAmount(totalAmount);
+
                 orders.add(order);
             }
         } catch (SQLException e) {

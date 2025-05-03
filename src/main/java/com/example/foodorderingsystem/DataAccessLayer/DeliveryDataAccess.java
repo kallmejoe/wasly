@@ -273,7 +273,7 @@ public class DeliveryDataAccess {
     }
 
     public List<Delivery> getAllDeliveries() throws SQLException {
-        String callGetAllDeliveries = "{call GetAllDeliveries}";
+        String callGetAllDeliveries = "{call GetAllDeliveries()}";
         List<Delivery> deliveries = new ArrayList<>();
 
         try (CallableStatement stmt = connection.prepareCall(callGetAllDeliveries);

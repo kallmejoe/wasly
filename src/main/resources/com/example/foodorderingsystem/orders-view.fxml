@@ -93,9 +93,7 @@
                     <TableColumn fx:id="orderIdColumn" text="Order ID" prefWidth="100.0"/>
                     <TableColumn fx:id="dateColumn" text="Date" prefWidth="150.0"/>
                     <TableColumn fx:id="restaurantColumn" text="Restaurant" prefWidth="200.0"/>
-                    <TableColumn fx:id="totalColumn" text="Total" prefWidth="100.0"/>
-                    <TableColumn fx:id="statusColumn" text="Status" prefWidth="120.0"/>
-                    <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="120.0"/>
+                    <TableColumn fx:id="totalColumn" text="Total" prefWidth="150.0"/>
                 </columns>
             </TableView>
 
