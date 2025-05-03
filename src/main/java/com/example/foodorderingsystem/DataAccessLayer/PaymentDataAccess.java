@@ -251,9 +251,8 @@ public class PaymentDataAccess {
             while (rs.next()) {
                 Payment payment = new Payment();
                 payment.setPaymentId(rs.getInt("Payment_ID"));
-                payment.setStatus(rs.getString("Payment_Status"));
-                payment.setMethod(rs.getString("Payment_Method"));
-                payment.setOrderId(rs.getInt("Order_ID"));
+                payment.setStatus(rs.getString("Status"));
+                payment.setMethod(rs.getString("Method"));
                 payment.setDeliveryId(rs.getInt("Delivery_ID"));
                 payment.setRestaurantId(rs.getInt("Restaurant_ID"));
                 payment.setCustomerId(rs.getInt("Customer_ID"));

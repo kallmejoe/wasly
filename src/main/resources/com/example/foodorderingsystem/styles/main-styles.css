@@ -278,6 +278,59 @@
     -fx-font-weight: bold;
 }
 
+/* Modern Restaurant Card Styles - New Design */
+.modern-restaurant-card {
+    -fx-background-color: white;
+    -fx-background-radius: 12px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 8, 0, 0, 2);
+    -fx-padding: 15px;
+    -fx-min-width: 250px;  /* Decreased from 280px to 250px */
+    -fx-pref-width: 260px; /* Decreased from 300px to 260px */
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+}
+
+.modern-restaurant-card:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 12, 0, 0, 4);
+    -fx-border-color: #FFCCBC; /* Light orange border on hover */
+    -fx-background-color: linear-gradient(to bottom right, white, #FFF3E0); /* More orange gradient */
+    -fx-cursor: hand;
+}
+
+.restaurant-placeholder {
+    -fx-background-color: linear-gradient(to bottom right, #FFAB91, #FFCCBC); /* More orange gradient */
+    -fx-background-radius: 8px;
+    -fx-min-height: 110px; /* Decreased from 130px to 110px */
+    -fx-max-height: 110px;
+    -fx-alignment: center;
+}
+
+.restaurant-initial {
+    -fx-font-size: 40px; /* Decreased from 46px to 40px */
+    -fx-font-weight: bold;
+    -fx-text-fill: #FF5722; /* Brighter orange */
+    -fx-opacity: 0.9; /* Increased opacity */
+}
+
+/* Home page specific styles */
+.welcome-container {
+    -fx-background-color: linear-gradient(to right, -primary-light, #fffbf9);
+    -fx-background-radius: 12px;
+    -fx-padding: 20px;
+}
+
+.welcome-header {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -primary-color;
+}
+
+.welcome-subheader {
+    -fx-font-size: 16px;
+    -fx-text-fill: #757575;
+}
+
 /* Search bar styles */
 .search-container {
     -fx-background-color: white;

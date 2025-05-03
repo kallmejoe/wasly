@@ -66,29 +66,34 @@
     <!-- Main Content Area -->
     <center>
         <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-padding: 20;">
-            <VBox spacing="20">
+            <VBox spacing="25">
                 <!-- Welcome Message -->
-                <HBox>
-                    <VBox>
-                        <Label text="Welcome back," styleClass="label-header"/>
-                        <Label fx:id="userNameLabel" text="User Name" styleClass="label-subheader"/>
+                <HBox styleClass="welcome-container">
+                    <VBox spacing="5">
+                        <Label text="Welcome back," styleClass="welcome-header"/>
+                        <Label fx:id="userNameLabel" text="User Name" styleClass="welcome-header"/>
+                        <Label text="What would you like to eat today?" styleClass="welcome-subheader"/>
                     </VBox>
+                    <padding>
+                        <Insets top="15" right="20" bottom="15" left="20"/>
+                    </padding>
                 </HBox>
 
                 <!-- Featured Section -->
-                <VBox spacing="10">
+                <VBox spacing="15">
                     <Label text="Featured Restaurants" styleClass="label-subheader"/>
-
-                    <FlowPane fx:id="featuredRestaurantsContainer" hgap="15" vgap="15"/>
+                    <FlowPane fx:id="featuredRestaurantsContainer" hgap="20" vgap="20"/>
                 </VBox>
 
                 <!-- All Restaurants Section -->
-                <VBox spacing="10">
+                <VBox spacing="15">
                     <Label text="All Restaurants" styleClass="label-subheader"/>
-
-                    <FlowPane fx:id="allRestaurantsContainer" hgap="15" vgap="15"/>
+                    <FlowPane fx:id="allRestaurantsContainer" hgap="20" vgap="20"/>
                 </VBox>
             </VBox>
+            <padding>
+                <Insets top="10" right="20" bottom="20" left="20"/>
+            </padding>
         </ScrollPane>
     </center>
 
