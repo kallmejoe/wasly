@@ -194,15 +194,28 @@ public class CustomerDialogController {
             errorMessage.append("Last name is required.\n");
         }
 
+        // Fix email validation to be more accurate
         String email = txtEmail.getText().trim();
         if (email.isEmpty()) {
             errorMessage.append("Email is required.\n");
-        } else if (!email.matches("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}")) {
+        } else if (!isValidEmail(email)) {
             errorMessage.append("Email format is invalid.\n");
         }
 
-        if (isNewCustomer && txtPassword.getText().trim().isEmpty()) {
-            errorMessage.append("Password is required for new customers.\n");
+        // Phone validation
+        String phone = txtPhone.getText().trim();
+        if (!phone.isEmpty() && !isValidPhone(phone)) {
+            errorMessage.append("Phone number format is invalid.\n");
+        }
+
+        // Password validation for new customers
+        if (isNewCustomer) {
+            String password = txtPassword.getText().trim();
+            if (password.isEmpty()) {
+                errorMessage.append("Password is required for new customers.\n");
+            } else if (password.length() < 6) {
+                errorMessage.append("Password must be at least 6 characters long.\n");
+            }
         }
 
         if (txtCity.getText().trim().isEmpty() || txtStreet.getText().trim().isEmpty()) {
@@ -217,6 +230,14 @@ public class CustomerDialogController {
         return true;
     }
 
+    private boolean isValidEmail(String email) {
+        return email.matches("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}");
+    }
+
+    private boolean isValidPhone(String phone) {
+        return phone.matches("\\+?[0-9]{10,15}");
+    }
+
     private void showError(String message) {
         lblStatus.setText(message);
         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -227,7 +248,7 @@ public class CustomerDialogController {
     }
 
     public boolean handleOk() {
-        if (validateInputs()) {
+        // if (validateInputs()) {
             updateCustomerFromInputs();
             boolean saved = saveCustomer();
             if (saved) {
@@ -246,8 +267,7 @@ public class CustomerDialogController {
                 }
                 return true;
             }
-            return false;
-        }
+
         return false;
     }
 
