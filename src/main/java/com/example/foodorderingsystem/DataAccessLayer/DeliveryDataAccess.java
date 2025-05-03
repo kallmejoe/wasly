@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,7 +75,7 @@ public class DeliveryDataAccess {
      * @throws SQLException if a database error occurs
      */
     public int createDelivery(Delivery delivery) throws SQLException {
-        // Using the CreateDelivery stored procedure
+        // Using the CreateDelivery stored procedure with ResultSet return pattern
         String callCreateDelivery = "{call CreateDelivery(?, ?, ?, ?)}";
 
         try (CallableStatement stmt = connection.prepareCall(callCreateDelivery)) {
@@ -83,25 +84,21 @@ public class DeliveryDataAccess {
             stmt.setString(3, delivery.getLastName());
             stmt.setDouble(4, delivery.getSalary());
 
-            stmt.execute();
-
-            // Get the ID of the newly created delivery person (using SCOPE_IDENTITY() from SQL Server)
-            try (Statement idStmt = connection.createStatement();
-                 ResultSet rs = idStmt.executeQuery("SELECT SCOPE_IDENTITY() AS ID")) {
+            // Execute the stored procedure and get the ResultSet with the ID
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    int deliveryId = rs.getInt("ID");
+                    int deliveryId = rs.getInt("Delivery_ID"); // Column name from stored procedure
                     delivery.setDeliveryId(deliveryId);
 
-//                    // Save the location if provided
-//                    if (delivery.getLocation() != null) {
-//                        addDeliveryLocation(deliveryId, delivery.getLocation());
-//                    }
-
+                    System.out.println("Delivery created successfully with ID: " + deliveryId);
                     return deliveryId;
                 } else {
-                    throw new SQLException("Creating delivery failed, no ID obtained.");
+                    throw new SQLException("Failed to retrieve DeliveryID after creation");
                 }
             }
+        } catch (SQLException e) {
+            System.err.println("Error creating delivery: " + e.getMessage());
+            throw e;
         }
     }
 
@@ -208,7 +205,7 @@ public class DeliveryDataAccess {
 
     public Delivery getDeliveryById(int deliveryId) throws SQLException {
         // Get basic delivery info
-        String callGetDelivery = "{call GetDelivery(?)}";
+        String callGetDelivery = "{call GetDeliveryById(?)}";
         Delivery delivery = null;
 
         try (CallableStatement stmt = connection.prepareCall(callGetDelivery)) {

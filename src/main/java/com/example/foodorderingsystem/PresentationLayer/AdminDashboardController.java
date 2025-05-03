@@ -182,7 +182,7 @@ public class AdminDashboardController implements Initializable {
     }
 
     // Data loading methods
-    private void loadRestaurants() {
+    protected void loadRestaurants() {
         restaurantsPane.getChildren().clear();
         statusLabel.setText("Loading restaurants...");
 
@@ -199,7 +199,7 @@ public class AdminDashboardController implements Initializable {
         }
     }
 
-    private void loadProducts() {
+    protected void loadProducts() {
         productsPane.getChildren().clear();
         statusLabel.setText("Loading products...");
 
@@ -216,7 +216,7 @@ public class AdminDashboardController implements Initializable {
         }
     }
 
-    private void loadCategories() {
+    protected void loadCategories() {
         categoriesPane.getChildren().clear();
         statusLabel.setText("Loading categories...");
 
@@ -233,7 +233,7 @@ public class AdminDashboardController implements Initializable {
         }
     }
 
-    private void loadCustomers() {
+    protected void loadCustomers() {
         customersPane.getChildren().clear();
         statusLabel.setText("Loading customers...");
 
@@ -250,7 +250,7 @@ public class AdminDashboardController implements Initializable {
         }
     }
 
-    private void loadOrders() {
+    protected void loadOrders() {
         ordersPane.getChildren().clear();
         statusLabel.setText("Loading orders...");
 
@@ -267,7 +267,7 @@ public class AdminDashboardController implements Initializable {
         }
     }
 
-    private void loadDeliveries() {
+    protected void loadDeliveries() {
         deliveriesPane.getChildren().clear();
         statusLabel.setText("Loading deliveries...");
 
@@ -284,7 +284,7 @@ public class AdminDashboardController implements Initializable {
         }
     }
 
-    private void loadPayments() {
+    protected void loadPayments() {
         paymentsPane.getChildren().clear();
         statusLabel.setText("Loading payments...");
 
@@ -301,7 +301,7 @@ public class AdminDashboardController implements Initializable {
         }
     }
 
-    private void loadAdmins() {
+    protected void loadAdmins() {
         adminsPane.getChildren().clear();
         statusLabel.setText("Loading admins...");
 
@@ -473,8 +473,7 @@ public class AdminDashboardController implements Initializable {
 
         Label customerLabel = new Label("Customer: " + order.getCustomer().getName());
 
-        Label statusLabel = new Label("Status: " + order.getStatus());
-        statusLabel.getStyleClass().add("order-status");
+
 
         Label dateLabel = new Label("Date: " + order.getOrderDate().format(dateFormatter));
 
@@ -600,20 +599,26 @@ public class AdminDashboardController implements Initializable {
     private void openRestaurantDialog(Restaurant restaurant) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/foodorderingsystem/restaurant-dialog.fxml"));
-            BorderPane dialogRoot = loader.load();
+            DialogPane dialogPane = loader.load();
 
             RestaurantDialogController controller = loader.getController();
             controller.setRestaurant(restaurant);
 
-            Stage dialogStage = new Stage();
-            dialogStage.setTitle(restaurant.getRestaurantId() == 0 ? "Add Restaurant" : "Edit Restaurant");
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-            dialogStage.initOwner(contentArea.getScene().getWindow());
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setDialogPane(dialogPane);
+            dialog.setTitle(restaurant.getRestaurantId() == 0 ? "Add Restaurant" : "Edit Restaurant");
+            dialog.initModality(Modality.WINDOW_MODAL);
+            dialog.initOwner(contentArea.getScene().getWindow());
 
-            Scene scene = new Scene(dialogRoot);
-            dialogStage.setScene(scene);
+            // Set result converter to handle OK button action
+            dialog.setResultConverter(buttonType -> {
+                if (buttonType == ButtonType.OK) {
+                    controller.handleOk();
+                }
+                return buttonType;
+            });
 
-            dialogStage.showAndWait();
+            dialog.showAndWait();
 
             // Refresh after dialog closes
             loadRestaurants();
@@ -631,15 +636,21 @@ public class AdminDashboardController implements Initializable {
             ProductDialogController controller = loader.getController();
             controller.setProduct(product);
 
-            Stage dialogStage = new Stage();
-            dialogStage.setTitle(product.getProductId() == 0 ? "Add Product" : "Edit Product");
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-            dialogStage.initOwner(contentArea.getScene().getWindow());
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setDialogPane(dialogPane);
+            dialog.setTitle(product.getProductId() == 0 ? "Add Product" : "Edit Product");
+            dialog.initModality(Modality.WINDOW_MODAL);
+            dialog.initOwner(contentArea.getScene().getWindow());
 
-            Scene scene = new Scene(dialogPane);
-            dialogStage.setScene(scene);
+            // Set result converter to handle OK button action
+            dialog.setResultConverter(buttonType -> {
+                if (buttonType == ButtonType.OK) {
+                    controller.handleOk();
+                }
+                return buttonType;
+            });
 
-            dialogStage.showAndWait();
+            dialog.showAndWait();
 
             // Refresh after dialog closes
             loadProducts();
@@ -657,15 +668,21 @@ public class AdminDashboardController implements Initializable {
             CategoryDialogController controller = loader.getController();
             controller.setCategory(category);
 
-            Stage dialogStage = new Stage();
-            dialogStage.setTitle(category.getCategoryId() == 0 ? "Add Category" : "Edit Category");
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-            dialogStage.initOwner(contentArea.getScene().getWindow());
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setDialogPane(dialogPane);
+            dialog.setTitle(category.getCategoryId() == 0 ? "Add Category" : "Edit Category");
+            dialog.initModality(Modality.WINDOW_MODAL);
+            dialog.initOwner(contentArea.getScene().getWindow());
 
-            Scene scene = new Scene(dialogPane);
-            dialogStage.setScene(scene);
+            // Set result converter to handle OK button action
+            dialog.setResultConverter(buttonType -> {
+                if (buttonType == ButtonType.OK) {
+                    controller.handleOk();
+                }
+                return buttonType;
+            });
 
-            dialogStage.showAndWait();
+            dialog.showAndWait();
 
             // Refresh after dialog closes
             loadCategories();
@@ -683,15 +700,21 @@ public class AdminDashboardController implements Initializable {
             CustomerDialogController controller = loader.getController();
             controller.setCustomer(customer);
 
-            Stage dialogStage = new Stage();
-            dialogStage.setTitle(customer.getCustomerId() == 0 ? "Add Customer" : "Edit Customer");
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-            dialogStage.initOwner(contentArea.getScene().getWindow());
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setDialogPane(dialogPane);
+            dialog.setTitle(customer.getCustomerId() == 0 ? "Add Customer" : "Edit Customer");
+            dialog.initModality(Modality.WINDOW_MODAL);
+            dialog.initOwner(contentArea.getScene().getWindow());
 
-            Scene scene = new Scene(dialogPane);
-            dialogStage.setScene(scene);
+            // Set result converter to handle OK button action
+            dialog.setResultConverter(buttonType -> {
+                if (buttonType == ButtonType.OK) {
+                    controller.handleOk();
+                }
+                return buttonType;
+            });
 
-            dialogStage.showAndWait();
+            dialog.showAndWait();
 
             // Refresh after dialog closes
             loadCustomers();
@@ -709,15 +732,21 @@ public class AdminDashboardController implements Initializable {
             AdminDialogController controller = loader.getController();
             controller.setAdmin(admin);
 
-            Stage dialogStage = new Stage();
-            dialogStage.setTitle(admin.getAdminId() == 0 ? "Add Admin" : "Edit Admin");
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-            dialogStage.initOwner(contentArea.getScene().getWindow());
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setDialogPane(dialogPane);
+            dialog.setTitle(admin.getAdminId() == 0 ? "Add Admin" : "Edit Admin");
+            dialog.initModality(Modality.WINDOW_MODAL);
+            dialog.initOwner(contentArea.getScene().getWindow());
 
-            Scene scene = new Scene(dialogPane);
-            dialogStage.setScene(scene);
+            // Set result converter to handle OK button action
+            dialog.setResultConverter(buttonType -> {
+                if (buttonType == ButtonType.OK) {
+                    controller.handleOk();
+                }
+                return buttonType;
+            });
 
-            dialogStage.showAndWait();
+            dialog.showAndWait();
 
             // Refresh after dialog closes
             loadAdmins();
@@ -746,19 +775,71 @@ public class AdminDashboardController implements Initializable {
     }
 
     private void handleDeleteProduct(Product product) {
-        // Similar to handleDeleteRestaurant but for Products
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Confirm Delete");
+        confirmAlert.setHeaderText("Delete Product");
+        confirmAlert.setContentText("Are you sure you want to delete " + product.getName() + "?");
+
+        if (confirmAlert.showAndWait().get() == ButtonType.OK) {
+            try {
+                productDataAccess.deleteProduct(product.getProductId());
+                statusLabel.setText("Restaurant deleted successfully");
+                loadProducts();
+            } catch (SQLException e) {
+                showErrorAlert("Database Error", "Error deleting product: " + e.getMessage());
+            }
+        }
     }
 
     private void handleDeleteCategory(Category category) {
-        // Similar to handleDeleteRestaurant but for Categories
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Confirm Delete");
+        confirmAlert.setHeaderText("Delete Category");
+        confirmAlert.setContentText("Are you sure you want to delete " + category.getName() + "?");
+
+        if (confirmAlert.showAndWait().get() == ButtonType.OK) {
+            try {
+                categoryDataAccess.deleteCategory(category.getCategoryId());
+                statusLabel.setText("Restaurant deleted successfully");
+                loadCategories();
+            } catch (SQLException e) {
+                showErrorAlert("Database Error", "Error deleting category: " + e.getMessage());
+            }
+        }
     }
 
     private void handleDeleteCustomer(Customer customer) {
-        // Similar to handleDeleteRestaurant but for Customers
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Confirm Delete");
+        confirmAlert.setHeaderText("Delete Customer");
+        confirmAlert.setContentText("Are you sure you want to delete " + customer.getName() + "?");
+
+        if (confirmAlert.showAndWait().get() == ButtonType.OK) {
+            try {
+                customerDataAccess.deleteCustomer(customer.getCustomerId());
+                statusLabel.setText("Restaurant deleted successfully");
+                loadCustomers();
+            } catch (SQLException e) {
+                showErrorAlert("Database Error", "Error deleting customer: " + e.getMessage());
+            }
+        }
     }
 
     private void handleDeleteAdmin(Admin admin) {
-        // Similar to handleDeleteRestaurant but for Admins
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Confirm Delete");
+        confirmAlert.setHeaderText("Delete Admin");
+        confirmAlert.setContentText("Are you sure you want to delete " + admin.getName() + "?");
+
+        if (confirmAlert.showAndWait().get() == ButtonType.OK) {
+            try {
+                adminDataAccess.deleteAdmin(admin.getAdminId());
+                statusLabel.setText("Restaurant deleted successfully");
+                loadAdmins();
+            } catch (SQLException e) {
+                showErrorAlert("Database Error", "Error deleting admin: " + e.getMessage());
+            }
+        }
     }
 
     // View details methods

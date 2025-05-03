@@ -1,15 +1,18 @@
 package com.example.foodorderingsystem.DataAccessLayer;
 
-import com.example.foodorderingsystem.BusinessLayer.Payment;
-import com.example.foodorderingsystem.BusinessLayer.Customer;
-import com.example.foodorderingsystem.BusinessLayer.Restaurant;
-import com.example.foodorderingsystem.BusinessLayer.Delivery;
-import com.example.foodorderingsystem.BusinessLayer.Order;
-
-import java.sql.*;
-import java.time.LocalDateTime;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.example.foodorderingsystem.BusinessLayer.Payment;
 
 public class PaymentDataAccess {
 
@@ -48,7 +51,7 @@ public class PaymentDataAccess {
      */
     public int createPayment(Payment payment) throws SQLException {
         // Using PlacePayment stored procedure
-        String callProc = "{call addPayment(?, ?, ?, ?)}";
+        String callProc = "{call PlacePayment(?, ?, ?, ?)}";
 
         try (CallableStatement stmt = connection.prepareCall(callProc)) {
             // Set parameters for the stored procedure
@@ -57,18 +60,15 @@ public class PaymentDataAccess {
             stmt.setInt(3, payment.getDeliveryId());
             stmt.setInt(4, payment.getRestaurantId());
 
-            stmt.execute();
-
-            // Get the payment ID (assuming it's auto-generated)
-            try (Statement idStmt = connection.createStatement();
-                 ResultSet rs = idStmt.executeQuery("SELECT MAX(Payment_ID) AS Payment_ID FROM Payment")) {
+            // Execute the stored procedure and get the ResultSet
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    int paymentId = rs.getInt("Payment_ID");
+                    int paymentId = rs.getInt("PaymentID"); // Column name from PlacePayment procedure
                     payment.setPaymentId(paymentId);
                     System.out.println("Payment created successfully with ID: " + paymentId);
                     return paymentId;
                 } else {
-                    throw new SQLException("Payment was created but ID could not be retrieved");
+                    throw new SQLException("Failed to retrieve PaymentID after creation");
                 }
             }
         } catch (SQLException e) {

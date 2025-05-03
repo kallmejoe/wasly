@@ -463,8 +463,11 @@ public class CartController implements Initializable {
             new SimpleStringProperty(param.getValue().getProduct().getName()));
 
         // Set up price column with currency formatting
-        priceColumn.setCellValueFactory(param ->
-            new SimpleObjectProperty<>(param.getValue().getProduct().getUnitPrice()));
+        priceColumn.setCellValueFactory(param -> {
+            // Convert Double to BigDecimal to avoid type incompatibility
+            Double price = param.getValue().getProduct().getPrice();
+            return new SimpleObjectProperty<>(BigDecimal.valueOf(price));
+        });
 
         priceColumn.setCellFactory(column -> new TableCell<Cart.CartItem, BigDecimal>() {
             @Override

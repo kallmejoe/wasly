@@ -11,35 +11,33 @@ public class Order {
     private Delivery delivery;
     private Payment payment;
     private double totalAmount;
-    private String status; // Added status field
+    private static int orderCounter = 0; // Static counter for unique order IDs
 
     // No-argument constructor
     public Order() {
         this.orderDate = LocalDateTime.now();
-        this.status = "Pending"; // Default status
     }
 
-    public Order(int orderId, LocalDateTime orderDate, Customer customer,
+
+    public Order( LocalDateTime orderDate, Customer customer,
                  Restaurant restaurant, Delivery delivery, Payment payment) {
-        this.orderId = orderId;
+        this.orderId = ++orderCounter;
         this.orderDate = orderDate;
         this.customer = customer;
         this.restaurant = restaurant;
         this.delivery = delivery;
         this.payment = payment;
         this.totalAmount = payment != null ? payment.getAmount() : 0.0;
-        this.status = "Pending"; // Default status
     }
 
-    public Order(int orderId, LocalDateTime now, Customer customer, Restaurant restaurant, Payment payment) {
-        this.orderId = orderId;
+    public Order( LocalDateTime now, Customer customer, Restaurant restaurant, Payment payment) {
+        this.orderId = ++orderCounter;
         this.orderDate = now;
         this.customer = customer;
         this.restaurant = restaurant;
         this.delivery = null; // Delivery is not set in this constructor
         this.payment = payment;
         this.totalAmount = payment != null ? payment.getAmount() : 0.0;
-        this.status = "Pending"; // Default status
     }
 
     // Constructor for use with checkout
@@ -48,7 +46,6 @@ public class Order {
                 java.util.Map<Product, Integer> items, BigDecimal totalAmount) {
         this.orderDate = LocalDateTime.now();
         this.totalAmount = totalAmount.doubleValue();
-        this.status = "Pending"; // Default status
         // Note: Customer, Restaurant, Delivery and Payment objects will be populated later
         // by the OrderDataAccess class
     }
@@ -125,13 +122,8 @@ public class Order {
     }
 
     // Added methods for status
-    public String getStatus() {
-        return status;
-    }
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
+
 
     // For compatibility with code expecting getOrder()
     public Order getOrder() {

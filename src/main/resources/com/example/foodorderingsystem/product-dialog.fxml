@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<DialogPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.foodorderingsystem.PresentationLayer.ProductDialogController"
+            prefWidth="450" prefHeight="400">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <headerText>Product Details</headerText>
+
+    <content>
+        <GridPane hgap="10" vgap="10">
+            <columnConstraints>
+                <ColumnConstraints hgrow="NEVER" minWidth="100" prefWidth="120"/>
+                <ColumnConstraints hgrow="ALWAYS" minWidth="200" prefWidth="250"/>
+            </columnConstraints>
+
+            <!-- Product ID (hidden for new products) -->
+            <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <Label fx:id="lblProductId" text="New" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+            <!-- Product Name -->
+            <Label text="Name:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtProductName" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+            <!-- Price -->
+            <Label text="Price:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtProductPrice" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+            <!-- Restaurant -->
+            <Label text="Restaurant:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="cmbRestaurant" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+            <!-- Category -->
+            <Label text="Category:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="cmbCategory" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+            <!-- Description -->
+            <Label text="Description:" GridPane.rowIndex="5" GridPane.columnIndex="0" GridPane.valignment="TOP">
+                <padding>
+                    <Insets top="5"/>
+                </padding>
+            </Label>
+            <TextArea fx:id="txtDescription" GridPane.rowIndex="5" GridPane.columnIndex="1" prefHeight="80"/>
+
+            <Label text="Status:" GridPane.rowIndex="6" GridPane.columnIndex="0" GridPane.valignment="TOP">
+                <padding>
+                    <Insets top="5"/>
+                </padding>
+            </Label>
+            <Label fx:id="lblStatus" text="" GridPane.rowIndex="6" GridPane.columnIndex="1" wrapText="true"/>
+        </GridPane>
+    </content>
+
+    <buttonTypes>
+        <ButtonType fx:constant="OK"/>
+        <ButtonType fx:constant="CANCEL"/>
+    </buttonTypes>
+</DialogPane>

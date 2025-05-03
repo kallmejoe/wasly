@@ -83,7 +83,9 @@ public class Cart {
     public BigDecimal calculateTotal() {
         BigDecimal total = BigDecimal.ZERO;
         for (Map.Entry<Product, Integer> entry : items.entrySet()) {
-            BigDecimal itemPrice = entry.getKey().getUnitPrice().multiply(BigDecimal.valueOf(entry.getValue()));
+            // Convert the double to BigDecimal before multiplying
+            BigDecimal itemPrice = BigDecimal.valueOf(entry.getKey().getUnitPrice())
+                    .multiply(BigDecimal.valueOf(entry.getValue()));
             total = total.add(itemPrice);
         }
         return total;
@@ -166,7 +168,9 @@ public class Cart {
         }
 
         public BigDecimal getItemTotal() {
-            return product.getUnitPrice().multiply(BigDecimal.valueOf(quantity));
+            // Convert the double to BigDecimal before multiplying
+            return BigDecimal.valueOf(product.getUnitPrice())
+                   .multiply(BigDecimal.valueOf(quantity));
         }
     }
 }

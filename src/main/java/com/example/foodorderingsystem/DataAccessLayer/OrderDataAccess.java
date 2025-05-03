@@ -43,25 +43,31 @@ public class OrderDataAccess {
     }
 
     public int placeOrder(Order order) throws SQLException {
-        // Using PlaceOrder stored procedure
-        String callPlaceOrder = "{call PlaceOrder(?, ?, ?, ?, ?, ?)}";
+        String sql = "{call PlaceOrder(?, ?, ?, ?, ?)}";
 
-        try (CallableStatement stmt = connection.prepareCall(callPlaceOrder)) {
-            stmt.setInt(1, order.getOrderId());
-            stmt.setTimestamp(2, Timestamp.valueOf(order.getOrderDate()));
-            stmt.setInt(3, order.getCustomer().getCustomerId());
-            stmt.setInt(4, order.getRestaurant().getRestaurantId());
-            stmt.setInt(5, order.getDelivery().getDeliveryId());
-            stmt.setInt(6, order.getPayment().getPaymentId());
+        try (CallableStatement stmt = connection.prepareCall(sql)) {
+            stmt.setTimestamp(1, Timestamp.valueOf(order.getOrderDate()));
+            stmt.setInt(2, order.getCustomer().getCustomerId());
+            stmt.setInt(3, order.getRestaurant().getRestaurantId());
+            stmt.setInt(4, order.getDelivery().getDeliveryId());
 
+            // Register the output parameter
+            stmt.registerOutParameter(5, Types.INTEGER);
+
+            // Execute the procedure
             stmt.execute();
-            System.out.println("Order placed successfully with ID: " + order.getOrderId());
+
+            // Get the generated order ID
+            int orderId = stmt.getInt(5);
+            System.out.println("Order placed successfully with ID: " + orderId);
+
+            return orderId;
         } catch (SQLException e) {
             System.err.println("Error placing order: " + e.getMessage());
             throw e;
         }
-        return order.getOrderId();
     }
+
 
     /**
      * Creates and places an order using individual parameters
@@ -106,20 +112,22 @@ public class OrderDataAccess {
             payment.setRestaurantId(restaurantId);
             payment.setDeliveryId(deliveryId);
 
-            // Store the payment
             int paymentId = paymentDataAccess.createPayment(payment);
+            if(paymentId == 0) {
+                throw new SQLException("Failed to create payment");
+            }
             payment.setPaymentId(paymentId);
 
             // Create the order
             LocalDateTime now = LocalDateTime.now();
-            Order order = new Order(0, now, customer, restaurant, delivery, payment); // ID will be set by the database
+            Order order = new Order(now, customer, restaurant, delivery,payment); // ID will be set by the database
 
             // Place the order
             int orderId = placeOrder(order);
             order.setOrderId(orderId);
 
             // Save order items
-            saveOrderItems(orderId, items);
+//            saveOrderItems(orderId, items);
 
             return order;
         } catch (SQLException e) {
@@ -179,7 +187,7 @@ public class OrderDataAccess {
                     payment.setStatus(paymentStatus);
                     payment.setMethod(paymentMethod);
 
-                    Order order = new Order(orderId, orderDate, customer, restaurant, delivery, payment);
+                    Order order = new Order(orderDate, customer, restaurant, delivery, payment);
                     orders.add(order);
                 }
             }
@@ -219,7 +227,7 @@ public class OrderDataAccess {
                     payment.setStatus(paymentStatus);
                     payment.setMethod(paymentMethod);
 
-                    order = new Order(orderId, orderDate, customer, restaurant, delivery, payment);
+                    order = new Order( orderDate, customer, restaurant, delivery, payment);
                 }
             }
         } catch (SQLException e) {
@@ -248,53 +256,53 @@ public class OrderDataAccess {
         }
     }
 
-    public Payment getOrderPaymentStatus(int customerId, int orderId) throws SQLException {
-        // Using GetOrderPaymentStatus stored procedure
-        String callGetOrderPaymentStatus = "{call GetOrderPaymentStatus(?, ?)}";
-        Payment payment = null;
-
-        try (CallableStatement stmt = connection.prepareCall(callGetOrderPaymentStatus)) {
-            stmt.setInt(1, customerId);
-            stmt.setInt(2, orderId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    int paymentId = rs.getInt("Payment_ID");
-                    String status = rs.getString("Status");
-                    double amount = rs.getDouble("Amount");
-                    String method = rs.getString("Payment_Method");
-
-                    payment = new Payment();
-                    payment.setPaymentId(paymentId);
-                    payment.setStatus(status);
-                    payment.setMethod(method);
-
-                    // You can set other payment properties as needed
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error getting order payment status: " + e.getMessage());
-            throw e;
-        }
-
-        return payment;
-    }
-    //not done
-    public int getCustomerOrderCount(int customerId) throws SQLException {
-        // Using GetCustomerOrderCount function
-        String callGetCustomerOrderCount = "{? = call GetCustomerOrderCount(?)}";
-
-        try (CallableStatement stmt = connection.prepareCall(callGetCustomerOrderCount)) {
-            stmt.registerOutParameter(1, Types.INTEGER);
-            stmt.setInt(2, customerId);
-
-            stmt.execute();
-            return stmt.getInt(1);
-        } catch (SQLException e) {
-            System.err.println("Error getting customer order count: " + e.getMessage());
-            throw e;
-        }
-    }
+//    public Payment getOrderPaymentStatus(int customerId, int orderId) throws SQLException {
+//        // Using GetOrderPaymentStatus stored procedure
+//        String callGetOrderPaymentStatus = "{call GetOrderPaymentStatus(?, ?)}";
+//        Payment payment = null;
+//
+//        try (CallableStatement stmt = connection.prepareCall(callGetOrderPaymentStatus)) {
+//            stmt.setInt(1, customerId);
+//            stmt.setInt(2, orderId);
+//
+//            try (ResultSet rs = stmt.executeQuery()) {
+//                if (rs.next()) {
+//                    int paymentId = rs.getInt("Payment_ID");
+//                    String status = rs.getString("Status");
+//                    double amount = rs.getDouble("Amount");
+//                    String method = rs.getString("Payment_Method");
+//
+//                    payment = new Payment();
+//                    payment.setPaymentId(paymentId);
+//                    payment.setStatus(status);
+//                    payment.setMethod(method);
+//
+//                    // You can set other payment properties as needed
+//                }
+//            }
+//        } catch (SQLException e) {
+//            System.err.println("Error getting order payment status: " + e.getMessage());
+//            throw e;
+//        }
+//
+//        return payment;
+//    }
+//    //not done
+//    public int getCustomerOrderCount(int customerId) throws SQLException {
+//        // Using GetCustomerOrderCount function
+//        String callGetCustomerOrderCount = "{? = call GetCustomerOrderCount(?)}";
+//
+//        try (CallableStatement stmt = connection.prepareCall(callGetCustomerOrderCount)) {
+//            stmt.registerOutParameter(1, Types.INTEGER);
+//            stmt.setInt(2, customerId);
+//
+//            stmt.execute();
+//            return stmt.getInt(1);
+//        } catch (SQLException e) {
+//            System.err.println("Error getting customer order count: " + e.getMessage());
+//            throw e;
+//        }
+//    }
 
     // public Delivery getOrderDeliveryDetails(int customerId, int orderId) throws SQLException {
     //     // Using GetOrderDeliveryDetails stored procedure
@@ -412,7 +420,7 @@ public class OrderDataAccess {
                 Delivery delivery = deliveryDataAccess.getDeliveryById(deliveryId);
                 Payment payment = paymentDataAccess.getPaymentById(paymentId);
 
-                Order order = new Order(orderId, orderDate, customer, restaurant, delivery, payment);
+                Order order = new Order(orderDate, customer, restaurant, delivery, payment);
                 orders.add(order);
             }
         } catch (SQLException e) {

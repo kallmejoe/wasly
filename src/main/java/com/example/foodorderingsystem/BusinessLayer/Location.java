@@ -94,6 +94,16 @@ public class Location {
         this.longitude = longitude;
     }
 
+    // Add alias method for compatibility with code that expects getStreet()
+    public String getStreet() {
+        return streetName;
+    }
+
+    // Add alias method for setting street
+    public void setStreet(String street) {
+        this.streetName = street;
+    }
+
     // Method to get the full address as a string
     public String getAddress() {
         StringBuilder address = new StringBuilder();

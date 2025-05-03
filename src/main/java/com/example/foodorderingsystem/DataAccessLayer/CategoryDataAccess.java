@@ -51,6 +51,53 @@ public class CategoryDataAccess {
         }
     }
 
+    // New version of createCategory that includes parent category
+    public boolean insertCategory(Category category, int parentCategoryId) throws SQLException {
+        String callProc = "{call CreateCategory(?)}";
+        boolean success = false;
+
+        try {
+            connection.setAutoCommit(false);
+
+            try (CallableStatement stmt = connection.prepareCall(callProc)) {
+                stmt.setString(1, category.getName());
+                stmt.execute();
+
+                // Get the generated ID for the new category
+                String getIdSQL = "SELECT Category_ID FROM Category WHERE Cat_Name = ?";
+                try (PreparedStatement idStmt = connection.prepareStatement(getIdSQL)) {
+                    idStmt.setString(1, category.getName());
+                    ResultSet rs = idStmt.executeQuery();
+                    if (rs.next()) {
+                        int categoryId = rs.getInt("Category_ID");
+                        category.setCategoryId(categoryId);
+                        System.out.println("Category created successfully with ID: " + categoryId);
+
+                        // If a parent category was specified, create the relationship
+                        if (parentCategoryId > 0) {
+                            setParentCategory(categoryId, parentCategoryId);
+                        }
+
+                        connection.commit();
+                        success = true;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException rollbackEx) {
+                System.err.println("Error during rollback: " + rollbackEx.getMessage());
+            }
+            System.err.println("Error creating category with parent: " + e.getMessage());
+            throw e;
+        } finally {
+            connection.setAutoCommit(true);
+        }
+
+        return success;
+    }
+
     // Alias for createCategory to match the naming convention expected in error messages
     public void insertCategory(Category category) throws SQLException {
         createCategory(category);
@@ -123,6 +170,52 @@ public class CategoryDataAccess {
         }
     }
 
+    // New version of updateCategory that includes parent category
+    public boolean updateCategory(Category category, int parentCategoryId) throws SQLException {
+        boolean success = false;
+
+        try {
+            connection.setAutoCommit(false);
+
+            // Update the basic category information (name)
+            String callProc = "{call UpdateCategory(?, ?)}";
+            try (CallableStatement stmt = connection.prepareCall(callProc)) {
+                stmt.setInt(1, category.getCategoryId());
+                stmt.setString(2, category.getName());
+                stmt.executeUpdate();
+            }
+
+            // Update the parent category if needed
+            int currentParentId = getParentCategoryId(category.getCategoryId());
+            if (currentParentId != parentCategoryId) {
+                // Remove existing parent relationship if any
+                if (currentParentId > 0) {
+                    removeParentCategory(category.getCategoryId());
+                }
+
+                // Set new parent if not 0
+                if (parentCategoryId > 0) {
+                    setParentCategory(category.getCategoryId(), parentCategoryId);
+                }
+            }
+
+            connection.commit();
+            success = true;
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException rollbackEx) {
+                System.err.println("Error during rollback: " + rollbackEx.getMessage());
+            }
+            System.err.println("Error updating category with parent: " + e.getMessage());
+            throw e;
+        } finally {
+            connection.setAutoCommit(true);
+        }
+
+        return success;
+    }
+
     // DELETE operation using DeleteCategory stored procedure
     public void deleteCategory(int categoryId) throws SQLException {
         String callProc = "{call DeleteCategory(?)}";
@@ -136,6 +229,48 @@ public class CategoryDataAccess {
             System.err.println("Error deleting category: " + e.getMessage());
             throw e;
         }
+    }
+
+    // Helper method to set a category's description
+    private void updateCategoryDescription(int categoryId, String description) throws SQLException {
+        String sql = "UPDATE Category SET Description = ? WHERE Category_ID = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, description);
+            stmt.setInt(2, categoryId);
+            stmt.executeUpdate();
+        }
+    }
+
+    // Helper method to set parent-child relationship between categories
+    private void setParentCategory(int childCategoryId, int parentCategoryId) throws SQLException {
+        String sql = "INSERT INTO CategoryHierarchy (Parent_Category_ID, Child_Category_ID) VALUES (?, ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, parentCategoryId);
+            stmt.setInt(2, childCategoryId);
+            stmt.executeUpdate();
+        }
+    }
+
+    // Helper method to remove parent-child relationship
+    private void removeParentCategory(int childCategoryId) throws SQLException {
+        String sql = "DELETE FROM CategoryHierarchy WHERE Child_Category_ID = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, childCategoryId);
+            stmt.executeUpdate();
+        }
+    }
+
+    // Helper method to get the parent category ID for a child category
+    public int getParentCategoryId(int childCategoryId) throws SQLException {
+        String sql = "SELECT Parent_Category_ID FROM CategoryHierarchy WHERE Child_Category_ID = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, childCategoryId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("Parent_Category_ID");
+            }
+        }
+        return 0; // No parent category found
     }
 
     // Close database connection
