@@ -22,6 +22,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -473,9 +474,28 @@ public class AdminDashboardController implements Initializable {
 
         Label customerLabel = new Label("Customer: " + order.getCustomer().getName());
 
+        // Add status label - with null check in case getStatus() is not implemented
 
 
-        Label dateLabel = new Label("Date: " + order.getOrderDate().format(dateFormatter));
+        // Fix: Convert java.util.Date to LocalDateTime properly using try-catch for safety
+        Label dateLabel;
+        if (order.getOrderDate() != null) {
+            try {
+                if (order.getOrderDate() instanceof java.util.Date) {
+                    // Properly convert java.util.Date to LocalDateTime
+                    java.util.Date utilDate = (java.util.Date) order.getOrderDate();
+                    java.time.Instant instant = utilDate.toInstant();
+                    java.time.LocalDateTime localDateTime = instant.atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+                    dateLabel = new Label("Date: " + localDateTime.format(dateFormatter));
+                } else {
+                    dateLabel = new Label("Date: " + order.getOrderDate().toString());
+                }
+            } catch (Exception e) {
+                dateLabel = new Label("Date: " + order.getOrderDate().toString());
+            }
+        } else {
+            dateLabel = new Label("Date: N/A");
+        }
 
         Label totalLabel = new Label(String.format("Total: $%.2f", order.getTotalAmount()));
         totalLabel.getStyleClass().add("price");
@@ -505,7 +525,25 @@ public class AdminDashboardController implements Initializable {
         Label statusLabel = new Label("Status: " + delivery.getStatus());
         statusLabel.getStyleClass().add("order-status");
 
-        Label dateLabel = new Label("Date: " + delivery.getDeliveryDate().format(dateFormatter));
+        // Fix: Convert java.util.Date to LocalDateTime properly using try-catch for safety
+        Label dateLabel;
+        if (delivery.getDeliveryDate() != null) {
+            try {
+                if (delivery.getDeliveryDate() instanceof java.util.Date) {
+                    // Properly convert java.util.Date to LocalDateTime
+                    java.util.Date utilDate = (java.util.Date) delivery.getDeliveryDate();
+                    java.time.Instant instant = utilDate.toInstant();
+                    java.time.LocalDateTime localDateTime = instant.atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+                    dateLabel = new Label("Date: " + localDateTime.format(dateFormatter));
+                } else {
+                    dateLabel = new Label("Date: " + delivery.getDeliveryDate().toString());
+                }
+            } catch (Exception e) {
+                dateLabel = new Label("Date: " + delivery.getDeliveryDate().toString());
+            }
+        } else {
+            dateLabel = new Label("Date: N/A");
+        }
 
         TextFlow addressFlow = new TextFlow();
         Text addressText = new Text("Address: " + delivery.getLocation().getAddress());
@@ -541,7 +579,25 @@ public class AdminDashboardController implements Initializable {
         Label statusLabel = new Label("Status: " + payment.getStatus());
         statusLabel.getStyleClass().add("order-status");
 
-        Label dateLabel = new Label("Date: " + payment.getPaymentDate().format(dateFormatter));
+        // Fix: Convert java.util.Date to LocalDateTime properly using try-catch for safety
+        Label dateLabel;
+        if (payment.getPaymentDate() != null) {
+            try {
+                if (payment.getPaymentDate() instanceof java.util.Date) {
+                    // Properly convert java.util.Date to LocalDateTime
+                    java.util.Date utilDate = (java.util.Date) payment.getPaymentDate();
+                    java.time.Instant instant = utilDate.toInstant();
+                    java.time.LocalDateTime localDateTime = instant.atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+                    dateLabel = new Label("Date: " + localDateTime.format(dateFormatter));
+                } else {
+                    dateLabel = new Label("Date: " + payment.getPaymentDate().toString());
+                }
+            } catch (Exception e) {
+                dateLabel = new Label("Date: " + payment.getPaymentDate().toString());
+            }
+        } else {
+            dateLabel = new Label("Date: N/A");
+        }
 
         HBox buttonsBox = new HBox(10);
         buttonsBox.setAlignment(Pos.CENTER_RIGHT);

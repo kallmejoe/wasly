@@ -1,7 +1,7 @@
 package com.example.foodorderingsystem.BusinessLayer;
 import java.util.ArrayList;
 import java.util.List;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 public class Delivery extends Account {
     private int deliveryId;
@@ -10,7 +10,7 @@ public class Delivery extends Account {
     private List<Location> locations;
     private Location location; // Single location for a delivery
     private String status; // Added status field back
-    private LocalDateTime deliveryDate; // Added delivery date
+    private Date deliveryDate; // Changed from LocalDateTime to Date
     private Order order; // Added order reference
 
     // Default constructor
@@ -103,11 +103,11 @@ public class Delivery extends Account {
     }
 
     // Added methods for delivery date
-    public LocalDateTime getDeliveryDate() {
+    public Date getDeliveryDate() {
         return deliveryDate;
     }
 
-    public void setDeliveryDate(LocalDateTime deliveryDate) {
+    public void setDeliveryDate(Date deliveryDate) {
         this.deliveryDate = deliveryDate;
     }
 

@@ -235,7 +235,7 @@ public class DeliveryDataAccess {
 
     private List<String> getDeliveryPhones(int deliveryId) throws SQLException {
         // Using GetDeliveryPhones stored procedure
-        String callGetPhones = "{call GetDeliveryPhones(?)}";
+        String callGetPhones = "{call GetDeliveryPhoneNo(?)}";
         List<String> phoneNumbers = new ArrayList<>();
 
         try (CallableStatement stmt = connection.prepareCall(callGetPhones)) {
@@ -243,7 +243,7 @@ public class DeliveryDataAccess {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    phoneNumbers.add(rs.getString("DPhoneNo"));
+                    phoneNumbers.add(rs.getString("DelPhoneNo"));
                 }
             }
         }

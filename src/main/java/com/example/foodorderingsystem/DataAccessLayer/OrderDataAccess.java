@@ -8,9 +8,9 @@ import com.example.foodorderingsystem.BusinessLayer.Restaurant;
 import com.example.foodorderingsystem.BusinessLayer.Product;
 
 import java.sql.*;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class OrderDataAccess {
@@ -43,16 +43,15 @@ public class OrderDataAccess {
     }
 
     public int placeOrder(Order order) throws SQLException {
-        // Now 6 “?”: 5 IN, 1 OUT
+        // Now 6 "?": 5 IN, 1 OUT
         String sql = "{call PlaceOrder(?, ?, ?, ?, ?, ?)}";
 
-
         try (CallableStatement stmt = connection.prepareCall(sql)) {
-            stmt.setTimestamp(1, Timestamp.valueOf(order.getOrderDate()));
+            stmt.setTimestamp(1, new Timestamp(order.getOrderDate().getTime()));
             stmt.setInt(2, order.getCustomer().getCustomerId());
             stmt.setInt(3, order.getRestaurant().getRestaurantId());
             stmt.setInt(4, order.getDelivery().getDeliveryId());
-            stmt.setInt(5, order.getPayment().getPaymentId());      // ← pass your new payment ID
+            stmt.setInt(5, order.getPayment().getPaymentId());
 
             // now register parameter #6 as your OUTPUT
             stmt.registerOutParameter(6, Types.INTEGER);
@@ -64,8 +63,6 @@ public class OrderDataAccess {
             return orderId;
         }
     }
-
-
 
     /**
      * Creates and places an order using individual parameters
@@ -118,15 +115,14 @@ public class OrderDataAccess {
             payment.setPaymentId(paymentId);
 
             // Create the order
-            LocalDateTime now = LocalDateTime.now();
-            Order order = new Order(now, customer, restaurant, delivery,payment); // ID will be set by the database
+            Date now = new Date();
+            Order order = new Order(now, customer, restaurant, delivery, payment); // ID will be set by the database
 
             // Place the order
             int orderId = placeOrder(order);
             order.setOrderId(orderId);
 
-            // Save order items
-//            saveOrderItems(orderId, items);
+            saveOrderItems(orderId, items);
 
             return order;
         } catch (SQLException e) {
@@ -156,7 +152,7 @@ public class OrderDataAccess {
             throw e;
         }
     }
-    //done
+
     public List<Order> getCustomerOrders(int customerId) throws SQLException {
         // Using GetCustomerOrders stored procedure
         String callGetCustomerOrders = "{call GetCustomerOrders(?)}";
@@ -168,7 +164,7 @@ public class OrderDataAccess {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     int orderId = rs.getInt("Order_ID");
-                    LocalDateTime orderDate = rs.getTimestamp("Order_Date").toLocalDateTime();
+                    Date orderDate = rs.getTimestamp("Order_Date");
                     int restaurantId = rs.getInt("Restaurant_ID");
                     int deliveryId = rs.getInt("Delivery_ID");
                     String paymentStatus = rs.getString("Payment_Status");
@@ -181,7 +177,6 @@ public class OrderDataAccess {
 
                     // Since we don't have the actual paymentId in the result set,
                     // we'll create a dummy Payment object with the available info
-                    // In a real application, you might want to fetch the real Payment object
                     Payment payment = new Payment();
                     payment.setStatus(paymentStatus);
                     payment.setMethod(paymentMethod);
@@ -198,7 +193,6 @@ public class OrderDataAccess {
         return orders;
     }
 
-    //done
     public Order getCustomerOrderById(int customerId, int orderId) throws SQLException {
         // Using GetCustomerOrderByID stored procedure
         String callGetCustomerOrderById = "{call GetCustomerOrderByID(?, ?)}";
@@ -210,7 +204,7 @@ public class OrderDataAccess {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    LocalDateTime orderDate = rs.getTimestamp("Order_Date").toLocalDateTime();
+                    Date orderDate = rs.getTimestamp("Order_Date");
                     int restaurantId = rs.getInt("Restaurant_ID");
                     int deliveryId = rs.getInt("Delivery_ID");
                     String paymentStatus = rs.getString("Payment_Status");
@@ -226,7 +220,7 @@ public class OrderDataAccess {
                     payment.setStatus(paymentStatus);
                     payment.setMethod(paymentMethod);
 
-                    order = new Order( orderDate, customer, restaurant, delivery, payment);
+                    order = new Order(orderDate, customer, restaurant, delivery, payment);
                 }
             }
         } catch (SQLException e) {
@@ -237,7 +231,6 @@ public class OrderDataAccess {
         return order;
     }
 
-    //done
     public boolean cancelOrder(int customerId, int orderId) throws SQLException {
         // Using CancelOrder stored procedure
         String callCancelOrder = "{call CancelOrder(?, ?)}";
@@ -255,80 +248,6 @@ public class OrderDataAccess {
         }
     }
 
-//    public Payment getOrderPaymentStatus(int customerId, int orderId) throws SQLException {
-//        // Using GetOrderPaymentStatus stored procedure
-//        String callGetOrderPaymentStatus = "{call GetOrderPaymentStatus(?, ?)}";
-//        Payment payment = null;
-//
-//        try (CallableStatement stmt = connection.prepareCall(callGetOrderPaymentStatus)) {
-//            stmt.setInt(1, customerId);
-//            stmt.setInt(2, orderId);
-//
-//            try (ResultSet rs = stmt.executeQuery()) {
-//                if (rs.next()) {
-//                    int paymentId = rs.getInt("Payment_ID");
-//                    String status = rs.getString("Status");
-//                    double amount = rs.getDouble("Amount");
-//                    String method = rs.getString("Payment_Method");
-//
-//                    payment = new Payment();
-//                    payment.setPaymentId(paymentId);
-//                    payment.setStatus(status);
-//                    payment.setMethod(method);
-//
-//                    // You can set other payment properties as needed
-//                }
-//            }
-//        } catch (SQLException e) {
-//            System.err.println("Error getting order payment status: " + e.getMessage());
-//            throw e;
-//        }
-//
-//        return payment;
-//    }
-//    //not done
-//    public int getCustomerOrderCount(int customerId) throws SQLException {
-//        // Using GetCustomerOrderCount function
-//        String callGetCustomerOrderCount = "{? = call GetCustomerOrderCount(?)}";
-//
-//        try (CallableStatement stmt = connection.prepareCall(callGetCustomerOrderCount)) {
-//            stmt.registerOutParameter(1, Types.INTEGER);
-//            stmt.setInt(2, customerId);
-//
-//            stmt.execute();
-//            return stmt.getInt(1);
-//        } catch (SQLException e) {
-//            System.err.println("Error getting customer order count: " + e.getMessage());
-//            throw e;
-//        }
-//    }
-
-    // public Delivery getOrderDeliveryDetails(int customerId, int orderId) throws SQLException {
-    //     // Using GetOrderDeliveryDetails stored procedure
-    //     String callGetOrderDeliveryDetails = "{call GetOrderDeliveryDetails(?, ?)}";
-    //     Delivery delivery = null;
-
-    //     try (CallableStatement stmt = connection.prepareCall(callGetOrderDeliveryDetails)) {
-    //         stmt.setInt(1, customerId);
-    //         stmt.setInt(2, orderId);
-
-    //         try (ResultSet rs = stmt.executeQuery()) {
-    //             if (rs.next()) {
-    //                 int deliveryId = rs.getInt("Delivery_ID");
-
-    //                 // Fetch the delivery object using the DeliveryDataAccess class
-    //                 delivery = deliveryDataAccess.getDeliveryById(deliveryId);
-    //             }
-    //         }
-    //     } catch (SQLException e) {
-    //         System.err.println("Error getting order delivery details: " + e.getMessage());
-    //         throw e;
-    //     }
-
-    //     return delivery;
-    // }
-
-
     public List<Order> getOrdersByCustomerId(int customerId) throws SQLException {
         return getCustomerOrders(customerId);
     }
@@ -345,31 +264,41 @@ public class OrderDataAccess {
         List<Order> allOrders = getCustomerOrders(customerId);
         List<Order> filteredOrders = new ArrayList<>();
 
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime fromDate = null;
+        Date now = new Date();
+        Date fromDate = null;
 
         // Determine date filter
-        switch (datePeriod) {
-            case "Last Week":
-                fromDate = now.minus(7, ChronoUnit.DAYS);
-                break;
-            case "Last Month":
-                fromDate = now.minus(30, ChronoUnit.DAYS);
-                break;
-            case "Last 3 Months":
-                fromDate = now.minus(90, ChronoUnit.DAYS);
-                break;
-            case "Last 6 Months":
-                fromDate = now.minus(180, ChronoUnit.DAYS);
-                break;
-            case "Last Year":
-                fromDate = now.minus(365, ChronoUnit.DAYS);
-                break;
-            case "All Time":
-            default:
-                // No date filtering needed
-                fromDate = null;
-                break;
+        if (datePeriod != null) {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(now);
+
+            switch (datePeriod) {
+                case "Last Week":
+                    cal.add(Calendar.DAY_OF_YEAR, -7);
+                    fromDate = cal.getTime();
+                    break;
+                case "Last Month":
+                    cal.add(Calendar.MONTH, -1);
+                    fromDate = cal.getTime();
+                    break;
+                case "Last 3 Months":
+                    cal.add(Calendar.MONTH, -3);
+                    fromDate = cal.getTime();
+                    break;
+                case "Last 6 Months":
+                    cal.add(Calendar.MONTH, -6);
+                    fromDate = cal.getTime();
+                    break;
+                case "Last Year":
+                    cal.add(Calendar.YEAR, -1);
+                    fromDate = cal.getTime();
+                    break;
+                case "All Time":
+                default:
+                    // No date filtering needed
+                    fromDate = null;
+                    break;
+            }
         }
 
         // Apply filters
@@ -382,7 +311,8 @@ public class OrderDataAccess {
                                    (paymentStatus != null && paymentStatus.equals(status));
 
             // Check if date matches
-            boolean matchesDate = fromDate == null || order.getOrderDate().isAfter(fromDate);
+            boolean matchesDate = fromDate == null ||
+                                 (order.getOrderDate() != null && order.getOrderDate().after(fromDate));
 
             if (matchesStatus && matchesDate) {
                 filteredOrders.add(order);
@@ -399,7 +329,7 @@ public class OrderDataAccess {
      */
     public List<Order> getAllOrders() throws SQLException {
         // Using GetAllOrders stored procedure
-        String callGetAllOrders = "{call GetAllOrders}";
+        String callGetAllOrders = "{call GetAllOrders()}";
         List<Order> orders = new ArrayList<>();
 
         try (CallableStatement stmt = connection.prepareCall(callGetAllOrders);
@@ -408,7 +338,7 @@ public class OrderDataAccess {
             while (rs.next()) {
                 int orderId = rs.getInt("Order_ID");
                 int customerId = rs.getInt("Customer_ID");
-                LocalDateTime orderDate = rs.getTimestamp("Order_Date").toLocalDateTime();
+                Date orderDate = rs.getDate("Order_Date");
                 int restaurantId = rs.getInt("Restaurant_ID");
                 int deliveryId = rs.getInt("Delivery_ID");
                 int paymentId = rs.getInt("Payment_ID");

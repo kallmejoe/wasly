@@ -285,7 +285,10 @@ public class CartController implements Initializable {
 
             // Create order with initial status "Pending"
             Order order = new Order();
-            order.setOrderDate(LocalDateTime.now());
+            // Convert LocalDateTime to java.util.Date for compatibility
+            LocalDateTime now = LocalDateTime.now();
+            java.util.Date orderDate = java.util.Date.from(now.atZone(java.time.ZoneId.systemDefault()).toInstant());
+            order.setOrderDate(orderDate);
             order.setCustomer(customer);
             order.setRestaurant(restaurant);
             order.setTotalAmount(cart.calculateTotal().add(DELIVERY_FEE).doubleValue());

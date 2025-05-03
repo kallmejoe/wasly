@@ -120,6 +120,7 @@ public class AdminDashboardRestController implements Initializable {
 
         // Set table selection listener to populate form fields when a row is selected
         tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            selectedRestaurant = newSelection; // Store the selected restaurant
             if (newSelection != null) {
                 populateFields(newSelection);
             }

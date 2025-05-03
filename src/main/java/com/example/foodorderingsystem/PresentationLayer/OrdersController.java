@@ -106,9 +106,13 @@ public class OrdersController implements Initializable {
             new SimpleStringProperty(String.valueOf(data.getValue().getOrderId())));
 
         // Date column
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM d, yyyy h:mm a");
         dateColumn.setCellValueFactory(data -> {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("MMM d, yyyy h:mm a");
-            return new SimpleStringProperty(dateFormat.format(data.getValue().getOrderDate()));
+            if (data.getValue().getOrderDate() != null) {
+                return new SimpleStringProperty(dateFormat.format(data.getValue().getOrderDate()));
+            } else {
+                return new SimpleStringProperty("");
+            }
         });
 
         // Restaurant column
@@ -277,13 +281,15 @@ public class OrdersController implements Initializable {
             */
 
             // For now, we'll just show order details in an alert
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MMM d, yyyy h:mm a");
+            String formattedDate = order.getOrderDate() != null ? dateFormat.format(order.getOrderDate()) : "N/A";
+
             showAlert(Alert.AlertType.INFORMATION,
                       "Order Details",
                       "Order #" + order.getOrderId(),
                       "Restaurant: " + order.getRestaurant().getName() + "\n" +
-
                       "Total: $" + String.format("%.2f", order.getTotalAmount()) + "\n" +
-                      "Date: " + new SimpleDateFormat("MMM d, yyyy h:mm a").format(order.getOrderDate()));
+                      "Date: " + formattedDate);
         } catch (Exception e) {
             System.err.println("Error showing order details: " + e.getMessage());
             showAlert(Alert.AlertType.ERROR, "Error", "Could not show order details", e.getMessage());
