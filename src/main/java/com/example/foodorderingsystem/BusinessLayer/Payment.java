@@ -1,6 +1,6 @@
 package com.example.foodorderingsystem.BusinessLayer;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 public class Payment {
     private int paymentId;
@@ -13,14 +13,14 @@ public class Payment {
     private Delivery delivery;
     private Restaurant restaurant;
     private double amount; // Added amount field
-    private LocalDateTime orderDate; // Added order date field
-    private LocalDateTime paymentDate; // Added payment date field
+    private Date orderDate; // Changed from LocalDateTime to Date
+    private Date paymentDate; // Changed from LocalDateTime to Date
     private static int paymentCounter = 0; // Static counter for unique payment IDs
 
     // Default constructor for creating empty payment objects
     public Payment() {
         this.paymentId = ++paymentCounter;
-        this.paymentDate = LocalDateTime.now(); // Default to current date/time
+        this.paymentDate = new Date(); // Default to current date/time
     }
 
     public Payment(int paymentId, String status, String method, Delivery delivery, Restaurant restaurant) {
@@ -29,7 +29,7 @@ public class Payment {
         this.method = method;
         this.delivery = delivery;
         this.restaurant = restaurant;
-        this.paymentDate = LocalDateTime.now();
+        this.paymentDate = new Date();
         if (delivery != null) {
             this.deliveryId = delivery.getDeliveryId();
         }
@@ -47,7 +47,7 @@ public class Payment {
         this.customerId = customerId;
         this.delivery = delivery;
         this.restaurant = restaurant;
-        this.paymentDate = LocalDateTime.now();
+        this.paymentDate = new Date();
         if (delivery != null) {
             this.deliveryId = delivery.getDeliveryId();
         }
@@ -64,7 +64,7 @@ public class Payment {
         this.amount = amount;
         this.delivery = delivery;
         this.restaurant = restaurant;
-        this.paymentDate = LocalDateTime.now();
+        this.paymentDate = new Date();
         if (delivery != null) {
             this.deliveryId = delivery.getDeliveryId();
         }
@@ -172,20 +172,20 @@ public class Payment {
     }
 
     // Order date getter and setter
-    public LocalDateTime getOrderDate() {
+    public Date getOrderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(LocalDateTime orderDate) {
+    public void setOrderDate(Date orderDate) {
         this.orderDate = orderDate;
     }
 
     // Payment date getter and setter
-    public LocalDateTime getPaymentDate() {
+    public Date getPaymentDate() {
         return paymentDate;
     }
 
-    public void setPaymentDate(LocalDateTime paymentDate) {
+    public void setPaymentDate(Date paymentDate) {
         this.paymentDate = paymentDate;
     }
 }

@@ -1,33 +1,33 @@
 package com.example.foodorderingsystem.PresentationLayer;
 
-import com.example.foodorderingsystem.BusinessLayer.Account;
-import com.example.foodorderingsystem.BusinessLayer.Customer;
-import com.example.foodorderingsystem.BusinessLayer.Restaurant;
-import com.example.foodorderingsystem.DataAccessLayer.RestaurantDataAccess;
-import com.example.foodorderingsystem.FoodOrderingApp;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
-
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+
+import com.example.foodorderingsystem.BusinessLayer.Account;
+import com.example.foodorderingsystem.BusinessLayer.Restaurant;
+import com.example.foodorderingsystem.DataAccessLayer.RestaurantDataAccess;
+
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 public class DashboardController implements Initializable {
 
@@ -116,40 +116,58 @@ public class DashboardController implements Initializable {
 
     private Node createRestaurantCard(Restaurant restaurant) {
         VBox card = new VBox(10);
-        card.getStyleClass().add("restaurant-card");
-        card.setPrefWidth(200);
-        card.setPadding(new Insets(15));
+        card.getStyleClass().add("modern-restaurant-card");
+        card.setPadding(new Insets(0));
 
-        // Restaurant image
-        ImageView imageView = new ImageView();
-        imageView.setFitWidth(170);
-        imageView.setFitHeight(120);
-        imageView.setPreserveRatio(true);
+        // Restaurant placeholder with initial letter
+        StackPane placeholder = new StackPane();
+        placeholder.getStyleClass().add("restaurant-placeholder");
 
-        // Use a placeholder image or actual restaurant image if available
-        try {
-            imageView.setImage(new Image(getClass().getResourceAsStream("/com/example/foodorderingsystem/images/restaurant-placeholder.png")));
-        } catch (Exception e) {
-            System.err.println("Could not load restaurant image: " + e.getMessage());
-        }
+        // Use first letter of restaurant name as placeholder
+        String firstLetter = restaurant.getName().substring(0, 1).toUpperCase();
+        Label initialLabel = new Label(firstLetter);
+        initialLabel.getStyleClass().add("restaurant-initial");
+        placeholder.getChildren().add(initialLabel);
+
+        // Restaurant info container
+        VBox infoContainer = new VBox(6);
+        infoContainer.setPadding(new Insets(12, 0, 8, 0));
 
         // Restaurant name
         Label nameLabel = new Label(restaurant.getName());
         nameLabel.getStyleClass().add("restaurant-name");
+
+        // Restaurant rating
+        HBox ratingBox = new HBox(5);
+        ratingBox.setAlignment(Pos.CENTER_LEFT);
+
+        // Fake rating (sample data)
+        Label ratingLabel = new Label("★★★★☆ 4.0");
+        ratingLabel.getStyleClass().add("restaurant-rating");
+
+        // Category (hardcoded for demonstration)
+        Label categoryLabel = new Label("Restaurant");
+        categoryLabel.getStyleClass().add("restaurant-category");
+        ratingBox.getChildren().addAll(ratingLabel, categoryLabel);
 
         // Restaurant address
         String address = restaurant.getLocations().isEmpty() ? "No address available" :
                          restaurant.getLocations().get(0).getCity() + ", " +
                          restaurant.getLocations().get(0).getStreetName();
         Label addressLabel = new Label(address);
+        addressLabel.getStyleClass().add("restaurant-address");
 
         // Button to view restaurant
         Button viewButton = new Button("View Menu");
+        viewButton.getStyleClass().add("view-menu-button");
         viewButton.setPrefWidth(Double.MAX_VALUE);
         viewButton.setOnAction(event -> handleViewRestaurant(restaurant));
 
+        // Add all to info container
+        infoContainer.getChildren().addAll(nameLabel, ratingBox, addressLabel);
+
         // Add all components to the card
-        card.getChildren().addAll(imageView, nameLabel, addressLabel, viewButton);
+        card.getChildren().addAll(placeholder, infoContainer, viewButton);
 
         return card;
     }
@@ -195,12 +213,32 @@ public class DashboardController implements Initializable {
 
                 // Update UI with search results
                 allRestaurantsContainer.getChildren().clear();
-                for (Restaurant restaurant : searchResults) {
-                    allRestaurantsContainer.getChildren().add(createRestaurantCard(restaurant));
+
+                if (searchResults.isEmpty()) {
+                    // Show a message when no results are found
+                    Label noResultsLabel = new Label("No restaurants found matching \"" + searchTerm + "\"");
+                    noResultsLabel.getStyleClass().add("no-results-message");
+                    noResultsLabel.setStyle("-fx-font-size: 16px; -fx-padding: 20px;");
+                    allRestaurantsContainer.getChildren().add(noResultsLabel);
+                } else {
+                    // Display search results
+                    for (Restaurant restaurant : searchResults) {
+                        allRestaurantsContainer.getChildren().add(createRestaurantCard(restaurant));
+                    }
                 }
             } catch (SQLException e) {
                 System.err.println("Error searching restaurants: " + e.getMessage());
+
+                // Show error alert
+                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                alert.setTitle("Search Error");
+                alert.setHeaderText("Could not search restaurants");
+                alert.setContentText("An error occurred: " + e.getMessage());
+                alert.showAndWait();
             }
+        } else {
+            // If search field is empty, reload all restaurants
+            loadRestaurants();
         }
     }
 

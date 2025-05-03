@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,78 +33,57 @@ public class RestaurantDataAccess {
     }
 
     public void insertRestaurant(Restaurant restaurant) throws SQLException {
-        // Set auto-commit to false to start a transaction
+        if (connection == null || connection.isClosed()) {
+            throw new SQLException("Database connection is not established.");
+        }
+
         boolean originalAutoCommit = connection.getAutoCommit();
         connection.setAutoCommit(false);
 
         try {
-            // Using AddRestaurant stored procedure
             String callAddRestaurant = "{call CreateRestaurant(?)}";
 
             try (CallableStatement stmt = connection.prepareCall(callAddRestaurant)) {
-                // Set restaurant name parameter
                 stmt.setString(1, restaurant.getName());
-
-                // Execute the stored procedure
                 stmt.execute();
+            }
 
-                // Commit the restaurant creation immediately to ensure it's in the database
-                connection.commit();
+            try (Statement idStmt = connection.createStatement();
+                 ResultSet rs = idStmt.executeQuery("SELECT SCOPE_IDENTITY() AS Restaurant_ID")) {
 
-                // Instead of using getGeneratedKeys() which doesn't work with stored procedures,
-                // we'll get the last inserted ID with a separate query
-                try (java.sql.Statement idStmt = connection.createStatement();
-                     ResultSet rs = idStmt.executeQuery("SELECT SCOPE_IDENTITY() AS Restaurant_ID")) {
+                if (rs.next()) {
+                    int restaurantId = rs.getInt("Restaurant_ID");
+                    restaurant.setRestaurantId(restaurantId);
 
-                    if (rs.next()) {
-                        int restaurantId = rs.getInt("Restaurant_ID");
-                        restaurant.setRestaurantId(restaurantId);
+                    try (Statement verifyStmt = connection.createStatement();
+                         ResultSet verifyRs = verifyStmt.executeQuery(
+                                 "SELECT COUNT(*) FROM Restaurant WHERE Restaurant_ID = " + restaurantId)) {
 
-                        // Verify the restaurant was actually created
-                        try (java.sql.Statement verifyStmt = connection.createStatement();
-                             ResultSet verifyRs = verifyStmt.executeQuery("SELECT COUNT(*) FROM Restaurant WHERE Restaurant_ID = " + restaurantId)) {
-
-                            if (verifyRs.next() && verifyRs.getInt(1) > 0) {
-                                // Restaurant exists, proceed with adding locations only
-                                // Phone numbers are no longer added during restaurant creation
-
-                                // Insert locations
-                                for (Location location : restaurant.getLocations()) {
-                                    addRestaurantLocation(restaurantId, location);
-                                }
-
-                                // Commit the entire transaction
-                                connection.commit();
-                                System.out.println("Restaurant inserted successfully with ID: " + restaurantId);
-                            } else {
-                                // Restaurant not found, roll back
-                                connection.rollback();
-                                throw new SQLException("Restaurant creation verification failed. No restaurant with ID " + restaurantId + " found.");
+                        if (verifyRs.next() && verifyRs.getInt(1) > 0) {
+                            for (Location location : restaurant.getLocations()) {
+                                addRestaurantLocation(restaurantId, location);
                             }
+                            connection.commit();
+                            System.out.println("Restaurant inserted successfully with ID: " + restaurantId);
+                        } else {
+                            connection.rollback();
+                            throw new SQLException("Verification failed. No restaurant with ID " + restaurantId);
                         }
-                    } else {
-                        // No ID returned, roll back
-                        connection.rollback();
-                        throw new SQLException("Creating restaurant failed, no ID obtained.");
                     }
+                } else {
+                    connection.rollback();
+                    throw new SQLException("Creating restaurant failed, no ID obtained.");
                 }
             }
         } catch (SQLException e) {
-            // Roll back on any exception
-            try {
-                connection.rollback();
-            } catch (SQLException rollbackEx) {
-                System.err.println("Error during rollback: " + rollbackEx.getMessage());
-            }
+            connection.rollback();
             throw new SQLException("Error saving restaurant: " + e.getMessage(), e);
         } finally {
-            // Restore original auto-commit setting
             connection.setAutoCommit(originalAutoCommit);
         }
     }
 
     private void addRestaurantPhone(int restaurantId, String phoneNumber) throws SQLException {
-        // Using AddRestaurantPhone stored procedure
         String callAddRestaurantPhone = "{call CreateRestPhoneNo(?, ?)}";
 
         try (CallableStatement stmt = connection.prepareCall(callAddRestaurantPhone)) {
@@ -114,7 +94,6 @@ public class RestaurantDataAccess {
     }
 
     private void addRestaurantLocation(int restaurantId, Location location) throws SQLException {
-        // Using UpsertRestaurantLocation stored procedure
         String callUpsertLocation = "{call CreateRestLocation(?, ?, ?, ?)}";
 
         try (CallableStatement stmt = connection.prepareCall(callUpsertLocation)) {
@@ -127,7 +106,6 @@ public class RestaurantDataAccess {
     }
 
     public Restaurant getRestaurant(int restaurantId) throws SQLException {
-        // First get the restaurant basic info
         String callGetAllRestaurants = "{call GetAllRestaurants()}";
         Restaurant restaurant = null;
 
@@ -135,18 +113,11 @@ public class RestaurantDataAccess {
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                int id = rs.getInt("Restaurant_ID");
-                if (id == restaurantId) {
+                if (rs.getInt("Restaurant_ID") == restaurantId) {
                     String name = rs.getString("Name");
-
-                    // Get phone numbers
-                    List<String> phoneNumbers = getRestaurantPhones(restaurantId);
-
-                    // Get locations
+                    List<String> phones = getRestaurantPhones(restaurantId);
                     List<Location> locations = getRestaurantLocations(restaurantId);
-
-                    // Create restaurant object
-                    restaurant = new Restaurant(name, locations, phoneNumbers);
+                    restaurant = new Restaurant(name, locations, phones);
                     restaurant.setRestaurantId(restaurantId);
                     break;
                 }
@@ -157,13 +128,11 @@ public class RestaurantDataAccess {
     }
 
     private List<String> getRestaurantPhones(int restaurantId) throws SQLException {
-        // Using GetRestaurantPhoneNumbers stored procedure
         String callGetPhones = "{call GetRestaurantPhoneNumbers(?)}";
         List<String> phoneNumbers = new ArrayList<>();
 
         try (CallableStatement stmt = connection.prepareCall(callGetPhones)) {
             stmt.setInt(1, restaurantId);
-
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     phoneNumbers.add(rs.getString("RestPhoneNo"));
@@ -175,19 +144,18 @@ public class RestaurantDataAccess {
     }
 
     private List<Location> getRestaurantLocations(int restaurantId) throws SQLException {
-        // Using GetRestaurantLocation stored procedure
         String callGetLocation = "{call GetRestaurantLocations(?)}";
         List<Location> locations = new ArrayList<>();
 
         try (CallableStatement stmt = connection.prepareCall(callGetLocation)) {
             stmt.setInt(1, restaurantId);
-
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    String city = rs.getString("City");
-                    String streetName = rs.getString("Street_Name");
-                    String streetNumber = rs.getString("Street_Number");
-                    locations.add(new Location(city, streetName, streetNumber));
+                    locations.add(new Location(
+                            rs.getString("City"),
+                            rs.getString("Street_Name"),
+                            rs.getString("Street_Number")
+                    ));
                 }
             }
         }
@@ -196,26 +164,19 @@ public class RestaurantDataAccess {
     }
 
     public List<Restaurant> getAllRestaurants() throws SQLException {
-        // Using GetAllRestaurants stored procedure
-        String callGetAllRestaurants = "{call GetallRestaurants}";
+        String callGetAllRestaurants = "{call GetAllRestaurants()}"; // fixed typo
         List<Restaurant> restaurants = new ArrayList<>();
 
         try (CallableStatement stmt = connection.prepareCall(callGetAllRestaurants);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                int restaurantId = rs.getInt("Restaurant_ID");
+                int id = rs.getInt("Restaurant_ID");
                 String name = rs.getString("Name");
-
-                // Get phone numbers
-                List<String> phoneNumbers = getRestaurantPhones(restaurantId);
-
-                // Get locations
-                List<Location> locations = getRestaurantLocations(restaurantId);
-
-                // Create restaurant object
-                Restaurant restaurant = new Restaurant(name, locations, phoneNumbers);
-                restaurant.setRestaurantId(restaurantId);
+                List<String> phones = getRestaurantPhones(id);
+                List<Location> locations = getRestaurantLocations(id);
+                Restaurant restaurant = new Restaurant(name, locations, phones);
+                restaurant.setRestaurantId(id);
                 restaurants.add(restaurant);
             }
         }
@@ -225,26 +186,39 @@ public class RestaurantDataAccess {
 
     public List<Restaurant> searchRestaurants(String searchTerm) throws SQLException {
         List<Restaurant> allRestaurants = getAllRestaurants();
-        List<Restaurant> matchingRestaurants = new ArrayList<>();
+        List<Restaurant> result = new ArrayList<>();
+        String lowerSearchTerm = searchTerm.toLowerCase();
 
-        // Case-insensitive search in restaurant names
         for (Restaurant restaurant : allRestaurants) {
-            if (restaurant.getName().toLowerCase().contains(searchTerm.toLowerCase())) {
-                matchingRestaurants.add(restaurant);
+            // Check restaurant name
+            if (restaurant.getName() != null &&
+                restaurant.getName().toLowerCase().contains(lowerSearchTerm)) {
+                result.add(restaurant);
                 continue;
             }
 
-            // Search in locations (cities and streets)
-            for (Location location : restaurant.getLocations()) {
-                if (location.getCity().toLowerCase().contains(searchTerm.toLowerCase()) ||
-                    location.getStreetName().toLowerCase().contains(searchTerm.toLowerCase())) {
-                    matchingRestaurants.add(restaurant);
-                    break;
+            // Check restaurant locations
+            if (restaurant.getLocations() != null) {
+                boolean locationMatch = false;
+
+                for (Location loc : restaurant.getLocations()) {
+                    // Safely check city and street name for null before calling toLowerCase()
+                    if ((loc.getCity() != null &&
+                         loc.getCity().toLowerCase().contains(lowerSearchTerm)) ||
+                        (loc.getStreetName() != null &&
+                         loc.getStreetName().toLowerCase().contains(lowerSearchTerm))) {
+                        locationMatch = true;
+                        break;
+                    }
+                }
+
+                if (locationMatch) {
+                    result.add(restaurant);
                 }
             }
         }
 
-        return matchingRestaurants;
+        return result;
     }
 
     public Restaurant getRestaurantByID(int restaurantId) throws SQLException {
@@ -252,43 +226,43 @@ public class RestaurantDataAccess {
     }
 
     public boolean updateRestaurant(Restaurant restaurant) throws SQLException {
-        // Using UpdateRestaurantName stored procedure
-        String callUpdateRestaurantName = "{call UpdateRestaurantName(?, ?)}";
+        String callUpdateRestaurantName = "{call UpdateRestaurant(?, ?)}";
 
         try (CallableStatement stmt = connection.prepareCall(callUpdateRestaurantName)) {
             stmt.setInt(1, restaurant.getRestaurantId());
             stmt.setString(2, restaurant.getName());
             stmt.execute();
 
-            int restaurantId = restaurant.getRestaurantId();
+            int id = restaurant.getRestaurantId();
 
-            // Update phone numbers (delete all and re-insert)
-            deleteAllRestaurantPhones(restaurantId);
+            deleteAllRestaurantPhones(id);
             for (String phone : restaurant.getPhoneNo()) {
-                addRestaurantPhone(restaurantId, phone);
+                addRestaurantPhone(id, phone);
             }
 
-            // Update locations (delete all and re-insert)
-            deleteRestaurantLocation(restaurantId);
+            deleteRestaurantLocation(id);
             for (Location location : restaurant.getLocations()) {
-                addRestaurantLocation(restaurantId, location);
+                addRestaurantLocation(id, location);
             }
 
             System.out.println("Restaurant updated successfully.");
             return true;
+        } catch (SQLException e) {
+            System.err.println("Error updating restaurant: " + e.getMessage());
+            return false;
         }
     }
 
     private void deleteAllRestaurantPhones(int restaurantId) throws SQLException {
-        // We'll delete each phone number individually since there's no procedure to delete all at once
-        List<String> phoneNumbers = getRestaurantPhones(restaurantId);
-        for (String phone : phoneNumbers) {
-            deleteRestaurantPhone(restaurantId, phone);
+        String callDeletePhones = "{call DeleteRestaurantPhoneNumber(?)}"; // Assumes procedure deletes all for ID
+
+        try (CallableStatement stmt = connection.prepareCall(callDeletePhones)) {
+            stmt.setInt(1, restaurantId);
+            stmt.execute();
         }
     }
 
     private void deleteRestaurantPhone(int restaurantId, String phoneNumber) throws SQLException {
-        // Using DeleteRestaurantPhone stored procedure
         String callDeletePhone = "{call DeleteRestaurantPhone(?, ?)}";
 
         try (CallableStatement stmt = connection.prepareCall(callDeletePhone)) {
@@ -299,8 +273,7 @@ public class RestaurantDataAccess {
     }
 
     private void deleteRestaurantLocation(int restaurantId) throws SQLException {
-        // Using DeleteRestaurantLocation stored procedure
-        String callDeleteLocation = "{call DeleteRestaurantLocation(?)}";
+        String callDeleteLocation = "{call DeleteRestaurantLocations(?)}";
 
         try (CallableStatement stmt = connection.prepareCall(callDeleteLocation)) {
             stmt.setInt(1, restaurantId);
@@ -309,19 +282,15 @@ public class RestaurantDataAccess {
     }
 
     public void deleteRestaurant(int restaurantId) throws SQLException {
-        // First delete all phone numbers
         deleteAllRestaurantPhones(restaurantId);
-
-        // Then delete all locations
         deleteRestaurantLocation(restaurantId);
 
-        // Finally delete the restaurant using DeleteRestaurant stored procedure
         String callDeleteRestaurant = "{call DeleteRestaurant(?)}";
 
         try (CallableStatement stmt = connection.prepareCall(callDeleteRestaurant)) {
             stmt.setInt(1, restaurantId);
-            int rowsAffected = stmt.executeUpdate();
-            System.out.println(rowsAffected + " restaurant record(s) deleted along with related data.");
+            int rows = stmt.executeUpdate();
+            System.out.println(rows + " restaurant record(s) deleted.");
         }
     }
 

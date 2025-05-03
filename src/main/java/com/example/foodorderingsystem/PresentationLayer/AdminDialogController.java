@@ -290,16 +290,15 @@ public class AdminDialogController {
         }
     }
 
-    // Add missing methods for Admin class to handle "cannot find symbol" errors
-    public void handleSave() {
+    // Handler for OK button
+    public void handleOk() {
         if (validateInputs()) {
             updateAdminFromInputs();
-            saveAdmin();
+            if (saveAdmin()) {
+                if (dialog != null) {
+                    dialog.setResult(admin);
+                }
+            }
         }
-    }
-
-    // Add missing handleOk method as an alias for handleSave for consistency with other controllers
-    public void handleOk() {
-        handleSave();
     }
 }

@@ -1,12 +1,12 @@
 package com.example.foodorderingsystem;
 
+import java.io.IOException;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-
-import java.io.IOException;
 
 public class FoodOrderingApp extends Application {
 
@@ -32,6 +32,10 @@ public class FoodOrderingApp extends Application {
         stage.setScene(scene);
         stage.setMinWidth(800);
         stage.setMinHeight(600);
+
+        // Center the window on the screen
+        stage.centerOnScreen();
+
         stage.show();
     }
 

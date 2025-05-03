@@ -2,10 +2,11 @@ package com.example.foodorderingsystem.BusinessLayer;
 
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
+import java.util.Date;
 
 public class Order {
     private int orderId;
-    private LocalDateTime orderDate;
+    private Date orderDate;
     private Customer customer;
     private Restaurant restaurant;
     private Delivery delivery;
@@ -15,11 +16,11 @@ public class Order {
 
     // No-argument constructor
     public Order() {
-        this.orderDate = LocalDateTime.now();
+        this.orderDate = new Date();
     }
 
 
-    public Order( LocalDateTime orderDate, Customer customer,
+    public Order( Date orderDate, Customer customer,
                  Restaurant restaurant, Delivery delivery, Payment payment) {
         this.orderId = ++orderCounter;
         this.orderDate = orderDate;
@@ -30,7 +31,7 @@ public class Order {
         this.totalAmount = payment != null ? payment.getAmount() : 0.0;
     }
 
-    public Order( LocalDateTime now, Customer customer, Restaurant restaurant, Payment payment) {
+    public Order( Date now, Customer customer, Restaurant restaurant, Payment payment) {
         this.orderId = ++orderCounter;
         this.orderDate = now;
         this.customer = customer;
@@ -44,7 +45,7 @@ public class Order {
     public Order(int customerId, int restaurantId, Location deliveryLocation,
                 String paymentMethod,
                 java.util.Map<Product, Integer> items, BigDecimal totalAmount) {
-        this.orderDate = LocalDateTime.now();
+        this.orderDate = new Date();
         this.totalAmount = totalAmount.doubleValue();
         // Note: Customer, Restaurant, Delivery and Payment objects will be populated later
         // by the OrderDataAccess class
@@ -59,11 +60,11 @@ public class Order {
         this.orderId = orderId;
     }
 
-    public LocalDateTime getOrderDate() {
+    public Date getOrderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(LocalDateTime orderDate) {
+    public void setOrderDate(Date orderDate) {
         this.orderDate = orderDate;
     }
 
@@ -117,7 +118,7 @@ public class Order {
     }
 
     // Alias for getOrderDate to support getOrderTime calls
-    public LocalDateTime getOrderTime() {
+    public Date getOrderTime() {
         return orderDate;
     }
 

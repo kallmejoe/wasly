@@ -33,28 +33,32 @@
             <Label text="Price:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
             <TextField fx:id="txtProductPrice" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
+            <!-- Amount in Stock -->
+            <Label text="Amount in Stock:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtAmountInStock" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
             <!-- Restaurant -->
-            <Label text="Restaurant:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="cmbRestaurant" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+            <Label text="Restaurant:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="cmbRestaurant" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
 
             <!-- Category -->
-            <Label text="Category:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="cmbCategory" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+            <Label text="Category:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="cmbCategory" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
 
             <!-- Description -->
-            <Label text="Description:" GridPane.rowIndex="5" GridPane.columnIndex="0" GridPane.valignment="TOP">
+            <Label text="Description:" GridPane.rowIndex="6" GridPane.columnIndex="0" GridPane.valignment="TOP">
                 <padding>
                     <Insets top="5"/>
                 </padding>
             </Label>
-            <TextArea fx:id="txtDescription" GridPane.rowIndex="5" GridPane.columnIndex="1" prefHeight="80"/>
+            <TextArea fx:id="txtDescription" GridPane.rowIndex="6" GridPane.columnIndex="1" prefHeight="80"/>
 
-            <Label text="Status:" GridPane.rowIndex="6" GridPane.columnIndex="0" GridPane.valignment="TOP">
+            <Label text="Status:" GridPane.rowIndex="7" GridPane.columnIndex="0" GridPane.valignment="TOP">
                 <padding>
                     <Insets top="5"/>
                 </padding>
             </Label>
-            <Label fx:id="lblStatus" text="" GridPane.rowIndex="6" GridPane.columnIndex="1" wrapText="true"/>
+            <Label fx:id="lblStatus" text="" GridPane.rowIndex="7" GridPane.columnIndex="1" wrapText="true"/>
         </GridPane>
     </content>
 

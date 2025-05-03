@@ -1,29 +1,47 @@
 package com.example.foodorderingsystem.PresentationLayer;
 
-import com.example.foodorderingsystem.BusinessLayer.Product;
-import com.example.foodorderingsystem.BusinessLayer.Restaurant;
-import com.example.foodorderingsystem.BusinessLayer.Category;
-import com.example.foodorderingsystem.DataAccessLayer.ProductDataAccess;
-import com.example.foodorderingsystem.DataAccessLayer.RestaurantDataAccess;
-import com.example.foodorderingsystem.DataAccessLayer.CategoryDataAccess;
-import javafx.collections.FXCollections;
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.stage.Stage;
-
 import java.sql.SQLException;
 import java.util.List;
 
+import com.example.foodorderingsystem.BusinessLayer.Category;
+import com.example.foodorderingsystem.BusinessLayer.Product;
+import com.example.foodorderingsystem.BusinessLayer.Restaurant;
+import com.example.foodorderingsystem.DataAccessLayer.CategoryDataAccess;
+import com.example.foodorderingsystem.DataAccessLayer.ProductDataAccess;
+import com.example.foodorderingsystem.DataAccessLayer.RestaurantDataAccess;
+
+import javafx.collections.FXCollections;
+import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+
 public class ProductDialogController {
 
-    @FXML private DialogPane dialogPane;
-    @FXML private Label lblProductId;
-    @FXML private TextField txtProductName;
-    @FXML private TextField txtProductPrice;
-    @FXML private TextArea txtDescription;
-    @FXML private ComboBox<Restaurant> cmbRestaurant;
-    @FXML private ComboBox<Category> cmbCategory;
-    @FXML private Label lblStatus;
+    @FXML
+    private DialogPane dialogPane;
+    @FXML
+    private Label lblProductId;
+    @FXML
+    private TextField txtProductName;
+    @FXML
+    private TextField txtProductPrice;
+    @FXML
+    private TextArea txtDescription;
+    @FXML
+    private ComboBox<Restaurant> cmbRestaurant;
+    @FXML
+    private ComboBox<Category> cmbCategory;
+    @FXML
+    private Label lblStatus;
+    @FXML
+    private TextField txtAmountInStock;
 
     private Product product;
     private ProductDataAccess productDataAccess;
@@ -40,7 +58,9 @@ public class ProductDialogController {
             if (buttonType == ButtonType.OK) {
                 if (validateInputs()) {
                     updateProductFromInputs();
-                    return product;
+                    if (saveProduct()) {
+                        return product;
+                    }
                 }
                 return null;
             }
@@ -54,12 +74,22 @@ public class ProductDialogController {
         restaurantDataAccess = new RestaurantDataAccess();
         categoryDataAccess = new CategoryDataAccess();
 
+        // Set default amount in stock
+        txtAmountInStock.setText("0");
+
         // Load restaurants and categories
         loadRestaurants();
         loadCategories();
     }
 
     public void setProduct(Product product) {
+        if (product == null) {
+            this.product = new Product();
+            isNewProduct = true;
+            lblProductId.setText("New");
+            return;
+        }
+
         this.product = product;
         isNewProduct = (product.getProductId() == 0);
 
@@ -68,6 +98,7 @@ public class ProductDialogController {
             lblProductId.setText(String.valueOf(product.getProductId()));
             txtProductName.setText(product.getName());
             txtDescription.setText(product.getDescription() != null ? product.getDescription() : "");
+            txtAmountInStock.setText(String.valueOf(product.getAmountInStock()));
 
             // Display price as formatted string
             txtProductPrice.setText(String.format("%.2f", product.getPrice()));
@@ -148,39 +179,62 @@ public class ProductDialogController {
     }
 
     private void updateProductFromInputs() {
-        // Update product object with form data
-        product.setName(txtProductName.getText().trim());
-        product.setDescription(txtDescription.getText().trim());
+        System.out.println("Updating product from inputs...");
 
+        // Update product object with form data
+        String productName = txtProductName.getText().trim();
+        String description = txtDescription.getText().trim();
+        String priceString = txtProductPrice.getText().trim();
+        String stockString = txtAmountInStock.getText().trim();
+
+        // Set basic product info
+        product.setName(productName);
+        product.setDescription(description);
+
+        // Set price
         try {
-            double price = Double.parseDouble(txtProductPrice.getText().trim());
+            double price = Double.parseDouble(priceString);
             product.setPrice(price);
         } catch (NumberFormatException e) {
             product.setPrice(0.0);
         }
 
-        Restaurant selectedRestaurant = cmbRestaurant.getValue();
-        Category selectedCategory = cmbCategory.getValue();
-
-        if (selectedRestaurant != null) {
-            product.setRestaurantId(selectedRestaurant.getRestaurantId());
+        // Set amount in stock
+        try {
+            int stock = Integer.parseInt(stockString);
+            product.setAmountInStock(stock);
+        } catch (NumberFormatException e) {
+            product.setAmountInStock(0);
         }
 
+        // Set restaurant and category
+        Restaurant selectedRestaurant = cmbRestaurant.getValue();
+        if (selectedRestaurant != null) {
+            product.setRestaurant(selectedRestaurant);
+        }
+
+        Category selectedCategory = cmbCategory.getValue();
         if (selectedCategory != null) {
-            product.setCategoryId(selectedCategory.getCategoryId());
+            product.setCategory(selectedCategory);
         }
     }
 
     public boolean saveProduct() {
         try {
             if (isNewProduct) {
+                System.out.println("Inserting new product: " + product.getName());
                 productDataAccess.insertProduct(product);
             } else {
+                System.out.println("Updating existing product with ID: " + product.getProductId());
                 productDataAccess.updateProduct(product);
             }
+
+            System.out.println("Product saved successfully.");
             return true;
         } catch (SQLException e) {
+            System.err.println("Database error: " + e.getMessage());
             showError("Database error: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
@@ -189,11 +243,11 @@ public class ProductDialogController {
         StringBuilder errorMessage = new StringBuilder();
         lblStatus.setText("");
 
-        if (txtProductName.getText() == null || txtProductName.getText().trim().isEmpty()) {
+        if (txtProductName.getText().trim().isEmpty()) {
             errorMessage.append("Product name is required\n");
         }
 
-        if (txtProductPrice.getText() == null || txtProductPrice.getText().trim().isEmpty()) {
+        if (txtProductPrice.getText().trim().isEmpty()) {
             errorMessage.append("Product price is required\n");
         } else {
             try {
@@ -225,7 +279,7 @@ public class ProductDialogController {
     private void showError(String message) {
         lblStatus.setText(message);
 
-        if (lblStatus.getText().isEmpty()) {
+        if (message != null && !message.isEmpty() && lblStatus.getText().isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
             alert.setHeaderText("Could not save product");
@@ -234,21 +288,23 @@ public class ProductDialogController {
         }
     }
 
+    @FXML
     public void handleOk() {
-        if (validateInputs()) {
+//        if (validateInputs()) {
             updateProductFromInputs();
             if (saveProduct()) {
                 dialog.setResult(product);
                 dialog.close();
             }
-        }
+//        }
     }
 
-    // Add handleSave method as an alias for handleOk for consistency with AdminDashboardController
+    @FXML
     public void handleSave() {
         handleOk();
     }
 
+    @FXML
     public void handleCancel() {
         dialog.setResult(null);
         dialog.close();

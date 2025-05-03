@@ -12,4 +12,9 @@ module com.example.foodorderingsystem {
 
     opens com.example.foodorderingsystem.PresentationLayer to javafx.fxml;
     exports com.example.foodorderingsystem.PresentationLayer;
+
+    exports com.example.foodorderingsystem.BusinessLayer;
+    opens com.example.foodorderingsystem.BusinessLayer to javafx.fxml;
+    exports com.example.foodorderingsystem.DataAccessLayer;
+    opens com.example.foodorderingsystem.DataAccessLayer to javafx.fxml;
 }

@@ -1,69 +1,32 @@
 package com.example.foodorderingsystem.PresentationLayer;
 
+import java.sql.SQLException;
+
 import com.example.foodorderingsystem.BusinessLayer.Category;
 import com.example.foodorderingsystem.DataAccessLayer.CategoryDataAccess;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.util.StringConverter;
 
-import java.sql.SQLException;
-import java.util.List;
+import javafx.fxml.FXML;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 
 public class CategoryDialogController {
 
     @FXML private DialogPane dialogPane;
     @FXML private Label lblCategoryId;
     @FXML private TextField txtCategoryName;
-    @FXML private ComboBox<Category> cmbParentCategory;
     @FXML private Label lblStatus;
 
     private Category category;
     private CategoryDataAccess categoryDataAccess;
     private boolean isNewCategory = true;
     private Dialog<Category> dialog;
-    private ObservableList<Category> availableCategories;
-    // Since Category doesn't have parent category ID field, we'll track it here
-    private int parentCategoryId = 0;
 
     @FXML
     private void initialize() {
         categoryDataAccess = new CategoryDataAccess();
-        availableCategories = FXCollections.observableArrayList();
-
-        // Configure the parent category combo box
-        cmbParentCategory.setItems(availableCategories);
-        cmbParentCategory.setConverter(new StringConverter<Category>() {
-            @Override
-            public String toString(Category category) {
-                return category == null ? "None" : category.getName();
-            }
-
-            @Override
-            public Category fromString(String string) {
-                return null; // Not needed for combo box
-            }
-        });
-
-        // Add a "None" option for no parent category
-        Category noneCategory = new Category();
-        noneCategory.setCategoryId(0);
-        noneCategory.setName("None");
-        availableCategories.add(noneCategory);
-        cmbParentCategory.getSelectionModel().selectFirst();
-
-        // Load available categories
-        loadCategories();
-    }
-
-    private void loadCategories() {
-        try {
-            List<Category> categories = categoryDataAccess.getAllCategories();
-            availableCategories.addAll(categories);
-        } catch (SQLException e) {
-            showError("Error loading categories: " + e.getMessage());
-        }
     }
 
     public void setDialog(Dialog<Category> dialog) {
@@ -92,60 +55,23 @@ public class CategoryDialogController {
             // Populate the form fields with the category data
             lblCategoryId.setText(String.valueOf(category.getCategoryId()));
             txtCategoryName.setText(category.getName());
-
-            // Parent category is stored separately since it's not in the Category class
-            // We would need to retrieve it from the database or receive it as input
-
-            // Remove this category from available parents (to prevent circular references)
-            availableCategories.removeIf(c -> c.getCategoryId() == category.getCategoryId());
         } else {
             // Creating a new category
             this.category = new Category();
-            cmbParentCategory.getSelectionModel().selectFirst(); // Select "None" by default
         }
-    }
-
-    // Set the parent category ID (used when editing an existing category)
-    public void setParentCategoryId(int parentId) {
-        this.parentCategoryId = parentId;
-
-        // Set the selected item in the combobox
-        if (parentId > 0) {
-            for (Category parentCategory : availableCategories) {
-                if (parentCategory.getCategoryId() == parentId) {
-                    cmbParentCategory.getSelectionModel().select(parentCategory);
-                    break;
-                }
-            }
-        } else {
-            cmbParentCategory.getSelectionModel().selectFirst(); // Select "None"
-        }
-    }
-
-    // Get the parent category ID (used when saving the category)
-    public int getParentCategoryId() {
-        return parentCategoryId;
     }
 
     private void updateCategoryFromForm() {
         category.setName(txtCategoryName.getText().trim());
-
-        // Set parent category
-        Category selectedParent = cmbParentCategory.getSelectionModel().getSelectedItem();
-        if (selectedParent != null && selectedParent.getCategoryId() > 0) {
-            parentCategoryId = selectedParent.getCategoryId();
-        } else {
-            parentCategoryId = 0; // No parent
-        }
     }
 
     public boolean saveCategory() {
         try {
             if (isNewCategory) {
-                boolean success = categoryDataAccess.insertCategory(category, parentCategoryId);
+                boolean success = categoryDataAccess.insertCategory(category);
                 return success;
             } else {
-                boolean success = categoryDataAccess.updateCategory(category, parentCategoryId);
+                boolean success = categoryDataAccess.updateCategory(category);
                 return success;
             }
         } catch (SQLException e) {

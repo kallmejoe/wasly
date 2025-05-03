@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import com.example.foodorderingsystem.BusinessLayer.Payment;
@@ -152,7 +153,7 @@ public class PaymentDataAccess {
                     // Get order date if needed
                     Timestamp orderDateTimestamp = rs.getTimestamp("Order_Date");
                     if (orderDateTimestamp != null) {
-                        payment.setOrderDate(orderDateTimestamp.toLocalDateTime());
+                        payment.setOrderDate(new Date(orderDateTimestamp.getTime()));
                     }
 
                     return payment;
@@ -193,7 +194,7 @@ public class PaymentDataAccess {
                     // Get order date if needed
                     Timestamp orderDateTimestamp = rs.getTimestamp("Order_Date");
                     if (orderDateTimestamp != null) {
-                        payment.setOrderDate(orderDateTimestamp.toLocalDateTime());
+                        payment.setOrderDate(new Date(orderDateTimestamp.getTime()));
                     }
 
                     payments.add(payment);
@@ -250,9 +251,8 @@ public class PaymentDataAccess {
             while (rs.next()) {
                 Payment payment = new Payment();
                 payment.setPaymentId(rs.getInt("Payment_ID"));
-                payment.setStatus(rs.getString("Payment_Status"));
-                payment.setMethod(rs.getString("Payment_Method"));
-                payment.setOrderId(rs.getInt("Order_ID"));
+                payment.setStatus(rs.getString("Status"));
+                payment.setMethod(rs.getString("Method"));
                 payment.setDeliveryId(rs.getInt("Delivery_ID"));
                 payment.setRestaurantId(rs.getInt("Restaurant_ID"));
                 payment.setCustomerId(rs.getInt("Customer_ID"));
@@ -260,7 +260,7 @@ public class PaymentDataAccess {
                 // Get order date
                 Timestamp orderDateTimestamp = rs.getTimestamp("Order_Date");
                 if (orderDateTimestamp != null) {
-                    payment.setOrderDate(orderDateTimestamp.toLocalDateTime());
+                    payment.setOrderDate(new Date(orderDateTimestamp.getTime()));
                 }
 
                 payments.add(payment);

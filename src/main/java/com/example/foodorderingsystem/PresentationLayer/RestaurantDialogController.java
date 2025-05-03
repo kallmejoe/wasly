@@ -38,15 +38,22 @@ public class RestaurantDialogController implements Initializable {
         // Set up the result converter for the dialog
         dialog.setResultConverter(buttonType -> {
             if (buttonType == ButtonType.OK) {
-                if (validateInput()) {
-                    updateRestaurantFromForm();
-                    if (saveRestaurant()) {
-                        return restaurant;
-                    }
+                // Call handleOk to save the restaurant
+                handleOk();
+                // Return the restaurant if it was saved successfully
+                if (restaurant.getRestaurantId() > 0 || !isNewRestaurant) {
+                    return restaurant;
                 }
-                return null;
             }
             return null;
+        });
+
+        // Set up button listeners
+        dialogPane.lookupButton(ButtonType.OK).addEventFilter(ActionEvent.ACTION, event -> {
+            // We need to consume the event here to prevent the dialog from closing if validation fails
+            if (!validateInput() || !saveRestaurant()) {
+                event.consume();
+            }
         });
     }
 
@@ -85,13 +92,15 @@ public class RestaurantDialogController implements Initializable {
         }
     }
 
+
+
     private void updateRestaurantFromForm() {
-        restaurant.setName(txtName.getText().trim());
-        restaurant.setDescription(txtDescription.getText().trim());
+        restaurant.setName(txtName != null && txtName.getText() != null ? txtName.getText().trim() : "");
+        restaurant.setDescription(txtDescription != null && txtDescription.getText() != null ? txtDescription.getText().trim() : "");
 
         // Handle phone numbers
         List<String> phoneNumbers = new ArrayList<>();
-        if (!txtPhone.getText().trim().isEmpty()) {
+        if (txtPhone != null && txtPhone.getText() != null && !txtPhone.getText().trim().isEmpty()) {
             phoneNumbers.add(txtPhone.getText().trim());
         }
         restaurant.setPhoneNo(phoneNumbers);
@@ -99,37 +108,91 @@ public class RestaurantDialogController implements Initializable {
         // Handle location
         List<Location> locations = new ArrayList<>();
         Location location = new Location();
-        location.setAddress(txtAddress.getText().trim());
+
+        String addressInput = txtAddress != null && txtAddress.getText() != null ? txtAddress.getText().trim() : "";
+        String city = "";
+        String streetName = "";
+        String streetNumber = "";
+
+        if (!addressInput.isEmpty()) {
+            String[] parts = addressInput.split(",");
+            if (parts.length >= 3) {
+                city = parts[0].trim();
+                streetName = parts[1].trim();
+                streetNumber = parts[2].trim();
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Invalid Address Format");
+                alert.setHeaderText("Address Parsing Failed");
+                alert.setContentText("Please enter address in the format:\nCity, Street Name, Street Number");
+                alert.showAndWait();
+                return; // exit early if format is invalid
+            }
+        }
+
+        location.setCity(city);
+        location.setStreetName(streetName);
+        location.setStreetNumber(streetNumber);
 
         try {
-            if (!txtLatitude.getText().trim().isEmpty()) {
+            if (txtLatitude != null && txtLatitude.getText() != null && !txtLatitude.getText().trim().isEmpty()) {
                 location.setLatitude(Double.parseDouble(txtLatitude.getText().trim()));
+            } else {
+                location.setLatitude(0.0);
             }
 
-            if (!txtLongitude.getText().trim().isEmpty()) {
+            if (txtLongitude != null && txtLongitude.getText() != null && !txtLongitude.getText().trim().isEmpty()) {
                 location.setLongitude(Double.parseDouble(txtLongitude.getText().trim()));
+            } else {
+                location.setLongitude(0.0);
             }
-
-            locations.add(location);
-            restaurant.setLocations(locations);
         } catch (NumberFormatException e) {
-            // Use default values for latitude and longitude
             location.setLatitude(0.0);
             location.setLongitude(0.0);
-            locations.add(location);
-            restaurant.setLocations(locations);
         }
+
+        locations.add(location);
+        restaurant.setLocations(locations);
     }
+
+
+
 
     public boolean saveRestaurant() {
         try {
+            boolean success;
             if (isNewRestaurant) {
                 restaurantDataAccess.insertRestaurant(restaurant);
-                // The method doesn't return an ID, so we rely on the method setting the ID in the restaurant object
-                return restaurant.getRestaurantId() > 0;
+                success = restaurant.getRestaurantId() > 0;
+                if (success) {
+                    lblStatus.setText("Restaurant created successfully!");
+                }
             } else {
-                return restaurantDataAccess.updateRestaurant(restaurant);
+                success = restaurantDataAccess.updateRestaurant(restaurant);
+                if (success) {
+                    lblStatus.setText("Restaurant updated successfully!");
+                }
             }
+
+            if (success) {
+                // Update the form fields with the saved data
+                lblRestaurantId.setText(String.valueOf(restaurant.getRestaurantId()));
+                txtName.setText(restaurant.getName());
+                txtDescription.setText(restaurant.getDescription() != null ? restaurant.getDescription() : "");
+
+                if (restaurant.getPhoneNo() != null && !restaurant.getPhoneNo().isEmpty()) {
+                    txtPhone.setText(restaurant.getPhoneNo().get(0));
+                }
+
+                if (restaurant.getLocations() != null && !restaurant.getLocations().isEmpty()) {
+                    Location location = restaurant.getLocations().get(0);
+                    txtAddress.setText(location.getAddress() != null ? location.getAddress() : "");
+                    txtLatitude.setText(String.valueOf(location.getLatitude()));
+                    txtLongitude.setText(String.valueOf(location.getLongitude()));
+                }
+            }
+
+            return success;
         } catch (SQLException e) {
             showError("Error saving restaurant: " + e.getMessage());
             return false;
@@ -139,27 +202,30 @@ public class RestaurantDialogController implements Initializable {
     private boolean validateInput() {
         lblStatus.setText("");
 
-        if (txtName.getText().trim().isEmpty()) {
+        // Check if txtName is null or empty
+        if (txtName == null || txtName.getText() == null || txtName.getText().trim().isEmpty()) {
             showError("Restaurant name is required");
             return false;
         }
 
-        if (txtPhone.getText().trim().isEmpty()) {
+        // Check if txtPhone is null or empty
+        if (txtPhone == null || txtPhone.getText() == null || txtPhone.getText().trim().isEmpty()) {
             showError("Phone number is required");
             return false;
         }
 
-        if (txtAddress.getText().trim().isEmpty()) {
+        // Check if txtAddress is null or empty
+        if (txtAddress == null || txtAddress.getText() == null || txtAddress.getText().trim().isEmpty()) {
             showError("Address is required");
             return false;
         }
 
         // Validate latitude and longitude if provided
         try {
-            if (!txtLatitude.getText().trim().isEmpty()) {
+            if (txtLatitude != null && txtLatitude.getText() != null && !txtLatitude.getText().trim().isEmpty()) {
                 Double.parseDouble(txtLatitude.getText().trim());
             }
-            if (!txtLongitude.getText().trim().isEmpty()) {
+            if (txtLongitude != null && txtLongitude.getText() != null && !txtLongitude.getText().trim().isEmpty()) {
                 Double.parseDouble(txtLongitude.getText().trim());
             }
         } catch (NumberFormatException e) {
@@ -175,10 +241,11 @@ public class RestaurantDialogController implements Initializable {
     }
 
     // Method called when the OK button is clicked
+    @FXML
     public void handleOk() {
-        if (validateInput()) {
+//        if (validateInput()) {
             updateRestaurantFromForm();
             saveRestaurant();
-        }
+//        }
     }
 }

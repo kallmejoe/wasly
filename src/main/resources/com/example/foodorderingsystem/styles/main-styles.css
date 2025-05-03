@@ -73,7 +73,7 @@
 
 /* Admin Dashboard Styles */
 .admin-sidebar {
-    -fx-background-color: -sidebar-color;
+    -fx-background-color: -primary-color;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 0);
 }
 
@@ -93,7 +93,7 @@
 }
 
 .admin-nav-button:hover {
-    -fx-background-color: -sidebar-hover;
+    -fx-background-color: -primary-dark;
     -fx-effect: none;
 }
 
@@ -119,14 +119,14 @@
 }
 
 .admin-action-button {
-    -fx-background-color: -admin-accent;
+    -fx-background-color: -primary-color;
     -fx-text-fill: white;
     -fx-font-size: 14px;
     -fx-padding: 8px 15px;
 }
 
 .admin-action-button:hover {
-    -fx-background-color: derive(-admin-accent, -10%);
+    -fx-background-color: -primary-dark;
 }
 
 .action-button-small {
@@ -229,11 +229,11 @@
 }
 
 .table-view .column-header {
-    -fx-background-color: -primary-light;
+    -fx-background-color: -primary-color;
 }
 
 .table-view .column-header .label {
-    -fx-text-fill: -text-color;
+    -fx-text-fill: white;
     -fx-font-weight: bold;
 }
 
@@ -276,6 +276,59 @@
 .restaurant-name {
     -fx-font-size: 18px;
     -fx-font-weight: bold;
+}
+
+/* Modern Restaurant Card Styles - New Design */
+.modern-restaurant-card {
+    -fx-background-color: white;
+    -fx-background-radius: 12px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 8, 0, 0, 2);
+    -fx-padding: 15px;
+    -fx-min-width: 250px;  /* Decreased from 280px to 250px */
+    -fx-pref-width: 260px; /* Decreased from 300px to 260px */
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+}
+
+.modern-restaurant-card:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 12, 0, 0, 4);
+    -fx-border-color: #FFCCBC; /* Light orange border on hover */
+    -fx-background-color: linear-gradient(to bottom right, white, #FFF3E0); /* More orange gradient */
+    -fx-cursor: hand;
+}
+
+.restaurant-placeholder {
+    -fx-background-color: linear-gradient(to bottom right, #FFAB91, #FFCCBC); /* More orange gradient */
+    -fx-background-radius: 8px;
+    -fx-min-height: 110px; /* Decreased from 130px to 110px */
+    -fx-max-height: 110px;
+    -fx-alignment: center;
+}
+
+.restaurant-initial {
+    -fx-font-size: 40px; /* Decreased from 46px to 40px */
+    -fx-font-weight: bold;
+    -fx-text-fill: #FF5722; /* Brighter orange */
+    -fx-opacity: 0.9; /* Increased opacity */
+}
+
+/* Home page specific styles */
+.welcome-container {
+    -fx-background-color: linear-gradient(to right, -primary-light, #fffbf9);
+    -fx-background-radius: 12px;
+    -fx-padding: 20px;
+}
+
+.welcome-header {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -primary-color;
+}
+
+.welcome-subheader {
+    -fx-font-size: 16px;
+    -fx-text-fill: #757575;
 }
 
 /* Search bar styles */
@@ -457,11 +510,11 @@
     -fx-background-color: white;
     -fx-background-radius: 8px;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 8, 0, 0, 2);
-    -fx-min-width: 300px;
-    -fx-max-width: 300px;
-    -fx-min-height: 180px;
-    -fx-max-height: 250px;
-    -fx-padding: 15px;
+    -fx-min-width: 250px;
+    -fx-max-width: 250px;
+    -fx-min-height: 150px;
+    -fx-max-height: 200px;
+    -fx-padding: 12px;
 }
 
 .admin-card:hover {
@@ -469,24 +522,24 @@
 }
 
 .card-header {
-    -fx-font-size: 18px;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
-    -fx-padding: 0 0 10px 0;
+    -fx-padding: 0 0 8px 0;
 }
 
 .card-id {
-    -fx-font-size: 12px;
+    -fx-font-size: 11px;
     -fx-text-fill: #757575;
 }
 
 .card-content {
-    -fx-font-size: 14px;
-    -fx-spacing: 8px;
+    -fx-font-size: 13px;
+    -fx-spacing: 5px;
 }
 
 .card-info-label {
     -fx-font-weight: bold;
-    -fx-min-width: 80px;
+    -fx-min-width: 70px;
 }
 
 .card-info-value {
@@ -494,19 +547,20 @@
 }
 
 .card-action-buttons {
-    -fx-spacing: 10px;
-    -fx-padding: 10px 0 0 0;
+    -fx-spacing: 8px;
+    -fx-padding: 8px 0 0 0;
 }
 
 .card-edit-button {
-    -fx-background-color: #3498db;
+    -fx-background-color: -primary-color;
     -fx-text-fill: white;
-    -fx-font-size: 13px;
-    -fx-min-width: 70px;
+    -fx-font-size: 12px;
+    -fx-min-width: 60px;
+    -fx-padding: 5px 8px;
 }
 
 .card-edit-button:hover {
-    -fx-background-color: #2980b9;
+    -fx-background-color: -primary-dark;
 }
 
 .card-delete-button {
@@ -521,10 +575,11 @@
 }
 
 .card-view-button {
-    -fx-background-color: #2ecc71;
+    -fx-background-color: -accent-color;
     -fx-text-fill: white;
-    -fx-font-size: 13px;
-    -fx-min-width: 70px;
+    -fx-font-size: 12px;
+    -fx-min-width: 60px;
+    -fx-padding: 5px 8px;
 }
 
 .card-view-button:hover {
