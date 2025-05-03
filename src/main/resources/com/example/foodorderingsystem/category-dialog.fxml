@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<DialogPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.foodorderingsystem.PresentationLayer.CategoryDialogController"
+            prefWidth="450" prefHeight="250">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <headerText>Category Details</headerText>
+
+    <content>
+        <GridPane hgap="10" vgap="10">
+            <columnConstraints>
+                <ColumnConstraints hgrow="NEVER" minWidth="100" prefWidth="120"/>
+                <ColumnConstraints hgrow="ALWAYS" minWidth="200" prefWidth="250"/>
+            </columnConstraints>
+
+            <!-- Category ID (hidden for new categories) -->
+            <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <Label fx:id="lblCategoryId" text="New" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+            <!-- Category Name -->
+            <Label text="Name: *" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtCategoryName" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+            <!-- Parent Category (optional) -->
+            <Label text="Parent Category:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="cmbParentCategory" GridPane.rowIndex="2" GridPane.columnIndex="1" prefWidth="250"/>
+
+            <!-- Status message for validation errors -->
+            <Label text="* Required fields" GridPane.rowIndex="3" GridPane.columnIndex="0"
+                   style="-fx-font-style: italic; -fx-text-fill: #666666;"/>
+            <Label fx:id="lblStatus" text="" GridPane.rowIndex="3" GridPane.columnIndex="1"
+                   style="-fx-text-fill: red;" wrapText="true"/>
+        </GridPane>
+    </content>
+
+    <buttonTypes>
+        <ButtonType fx:constant="OK"/>
+        <ButtonType fx:constant="CANCEL"/>
+    </buttonTypes>
+</DialogPane>

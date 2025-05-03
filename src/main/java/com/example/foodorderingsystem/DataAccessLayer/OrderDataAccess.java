@@ -43,30 +43,28 @@ public class OrderDataAccess {
     }
 
     public int placeOrder(Order order) throws SQLException {
-        String sql = "{call PlaceOrder(?, ?, ?, ?, ?)}";
+        // Now 6 “?”: 5 IN, 1 OUT
+        String sql = "{call PlaceOrder(?, ?, ?, ?, ?, ?)}";
+
 
         try (CallableStatement stmt = connection.prepareCall(sql)) {
             stmt.setTimestamp(1, Timestamp.valueOf(order.getOrderDate()));
             stmt.setInt(2, order.getCustomer().getCustomerId());
             stmt.setInt(3, order.getRestaurant().getRestaurantId());
             stmt.setInt(4, order.getDelivery().getDeliveryId());
+            stmt.setInt(5, order.getPayment().getPaymentId());      // ← pass your new payment ID
 
-            // Register the output parameter
-            stmt.registerOutParameter(5, Types.INTEGER);
+            // now register parameter #6 as your OUTPUT
+            stmt.registerOutParameter(6, Types.INTEGER);
 
-            // Execute the procedure
             stmt.execute();
 
-            // Get the generated order ID
-            int orderId = stmt.getInt(5);
+            int orderId = stmt.getInt(6);
             System.out.println("Order placed successfully with ID: " + orderId);
-
             return orderId;
-        } catch (SQLException e) {
-            System.err.println("Error placing order: " + e.getMessage());
-            throw e;
         }
     }
+
 
 
     /**
@@ -113,6 +111,7 @@ public class OrderDataAccess {
             payment.setDeliveryId(deliveryId);
 
             int paymentId = paymentDataAccess.createPayment(payment);
+            System.out.println("Payment created successfully with ID: " + paymentId);
             if(paymentId == 0) {
                 throw new SQLException("Failed to create payment");
             }

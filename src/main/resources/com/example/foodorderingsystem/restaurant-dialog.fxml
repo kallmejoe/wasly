@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<DialogPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.foodorderingsystem.PresentationLayer.RestaurantDialogController"
+            prefWidth="500" prefHeight="500">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <headerText>Restaurant Details</headerText>
+
+    <content>
+        <GridPane hgap="15" vgap="15">
+            <columnConstraints>
+                <ColumnConstraints hgrow="NEVER" minWidth="120" prefWidth="140"/>
+                <ColumnConstraints hgrow="ALWAYS" minWidth="200" prefWidth="300"/>
+            </columnConstraints>
+
+            <!-- Restaurant ID (hidden for new restaurants) -->
+            <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <Label fx:id="lblRestaurantId" text="New" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+            <!-- Restaurant Name -->
+            <Label text="Name: *" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtName" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+            <!-- Phone Number -->
+            <Label text="Phone: *" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <TextField fx:id="txtPhone" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+            <!-- Location Information -->
+            <Label text="Address: *" GridPane.rowIndex="3" GridPane.columnIndex="0" GridPane.valignment="TOP">
+                <padding>
+                    <Insets top="5"/>
+                </padding>
+            </Label>
+            <TextArea fx:id="txtAddress" prefHeight="60" wrapText="true"
+                     GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+            <!-- Location Coordinates (Optional) -->
+            <Label text="Coordinates:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <HBox spacing="10" GridPane.rowIndex="4" GridPane.columnIndex="1">
+                <TextField fx:id="txtLatitude" promptText="Latitude" HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="txtLongitude" promptText="Longitude" HBox.hgrow="ALWAYS"/>
+            </HBox>
+
+            <!-- Description -->
+            <Label text="Description:" GridPane.rowIndex="5" GridPane.columnIndex="0" GridPane.valignment="TOP">
+                <padding>
+                    <Insets top="5"/>
+                </padding>
+            </Label>
+            <TextArea fx:id="txtDescription" prefHeight="80" wrapText="true"
+                     GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+            <!-- Opening Hours
+            <Label text="Opening Hours:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+            <VBox spacing="5" GridPane.rowIndex="6" GridPane.columnIndex="1">
+                <HBox spacing="10">
+                    <ComboBox fx:id="cmbDay" promptText="Day" prefWidth="120"/>
+                    <TextField fx:id="txtOpenTime" promptText="Open" prefWidth="100"/>
+                    <TextField fx:id="txtCloseTime" promptText="Close" prefWidth="100"/>
+                    <Button fx:id="btnAddHours" text="+" prefWidth="30"/>
+                </HBox>
+                <ListView fx:id="lstOpeningHours" prefHeight="80"/>
+            </VBox>
+            -->
+
+            <!-- Status Label -->
+            <Label text="* Required fields" GridPane.rowIndex="7" GridPane.columnIndex="0"
+                   style="-fx-font-style: italic; -fx-text-fill: #666666;"/>
+            <Label fx:id="lblStatus" text="" GridPane.rowIndex="7" GridPane.columnIndex="1"
+                   style="-fx-text-fill: red;" wrapText="true"/>
+        </GridPane>
+    </content>
+
+    <buttonTypes>
+        <ButtonType fx:constant="OK"/>
+        <ButtonType fx:constant="CANCEL"/>
+    </buttonTypes>
+</DialogPane>
